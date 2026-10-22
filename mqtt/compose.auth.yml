@@ -1,0 +1,9 @@
+# Run from the repository root; paths resolve relative to docker-compose.yml.
+services:
+  mosquitto:
+    volumes:
+      - ./mqtt/mosquitto.auth.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mqtt/.secrets:/mosquitto/config/secrets:ro
+      - ./mqtt/acl.example:/mosquitto/config/acl:ro
+    environment:
+      XDG_CONFIG_HOME: /mosquitto/config/secrets/health

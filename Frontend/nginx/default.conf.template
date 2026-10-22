@@ -1,0 +1,60 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    server_tokens off;
+
+    # Docker's embedded DNS. Resolve at request time so the UI can start
+    # even when the separately supplied backend is unavailable.
+    resolver 127.0.0.11 valid=30s ipv6=off;
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location = /api {
+        return 308 /api/;
+    }
+
+    # Socket.IO realtime channel (Phase 6). WebSocket upgrade required.
+    location /socket.io/ {
+        set $api_upstream "${API_UPSTREAM}";
+        proxy_pass $api_upstream$request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+    }
+
+    location /api/ {
+        set $api_upstream "${API_UPSTREAM}";
+        # Preserve /api and the original query string.
+        proxy_pass $api_upstream$request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+        # No upload size policy exists in this frontend; defer to the backend.
+        client_max_body_size 0;
+        error_page 502 503 504 = @backend_unavailable;
+    }
+
+    location @backend_unavailable {
+        default_type application/json;
+        return 502 '{"message":"Backend unavailable. Check API_UPSTREAM and start the external API server."}';
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

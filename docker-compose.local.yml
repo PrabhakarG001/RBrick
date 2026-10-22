@@ -1,0 +1,65 @@
+# Complete authenticated local stack. Keep the base Atlas configuration intact.
+# Load deployment/.secrets/local.env and mqtt/.secrets/backend.env after .env.
+services:
+  mongo:
+    build:
+      context: ./deployment/mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo_root_username
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_root_password
+      MONGO_APP_DATABASE: '${DB_NAME:-building_safety}'
+    secrets:
+      - mongo_root_username
+      - mongo_root_password
+      - mongo_app_password
+      - mongo_keyfile
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--nodb", "/opt/resilliox/init-replica.js"]
+      interval: 10s
+      timeout: 8s
+      start_period: 40s
+      retries: 12
+    # No MongoDB host port. Single-member replica set enables transactions.
+  mosquitto:
+    volumes:
+      - ./mqtt/mosquitto.auth.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mqtt/.secrets:/mosquitto/config/secrets:ro
+      - ./mqtt/acl.example:/mosquitto/config/acl:ro
+    environment:
+      XDG_CONFIG_HOME: /mosquitto/config/secrets/health
+  backend:
+    environment:
+      MONGODB_URI: '${LOCAL_MONGODB_URI:?Run deployment/Initialize-Local.ps1 and load local.env}'
+      MONGODB_TLS: 'false'
+      MQTT_ENABLED: 'true'
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_USERNAME: backend
+      MQTT_PASSWORD: '${MQTT_PASSWORD:?Load mqtt/.secrets/backend.env}'
+      AI_SERVICE_URL: http://ai_ml:8000
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+      ai_ml:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      start_period: 30s
+      retries: 8
+secrets:
+  mongo_root_username:
+    file: ./deployment/.secrets/mongo_root_username
+  mongo_root_password:
+    file: ./deployment/.secrets/mongo_root_password
+  mongo_app_password:
+    file: ./deployment/.secrets/mongo_app_password
+  mongo_keyfile:
+    file: ./deployment/.secrets/mongo_keyfile
+volumes:
+  mongo-data: {}
+  mongo-config: {}

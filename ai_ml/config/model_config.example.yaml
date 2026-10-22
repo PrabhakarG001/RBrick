@@ -1,0 +1,38 @@
+# ResillioX AI/ML Model Configuration Template
+# Configure future custom trained model weights and feature pipelines here.
+
+model:
+  name: "building-safety-anomaly-detector"
+  version: "1.0.0"
+  type: "statistical_and_ml_ensemble"
+  framework: "pytorch_or_onnx"  # Supports ONNX, PyTorch (.pt/.pth), Joblib/Pickle
+  path: "models/trained/model.onnx"
+  artifacts_path: "models/artifacts/"
+
+dataset:
+  raw_dir: "datasets/raw/"
+  processed_dir: "datasets/processed/"
+  samples_dir: "datasets/samples/"
+  supported_formats: ["csv", "json", "parquet"]
+
+sensors:
+  numeric:
+    - temperature
+    - humidity
+    - gas_mq2
+    - smoke
+    - vibration_rms
+    - vibration_peak
+  binary:
+    - flame
+    - water_leak
+    - door_open
+    - sos
+
+thresholds:
+  zscore_anomaly_threshold: 2.5
+  ewma_alpha: 0.2
+  temperature_high: 45.0
+  humidity_high: 85.0
+  gas_ppm_warning: 400.0
+  vibration_rms_warning: 0.15

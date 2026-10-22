@@ -1,0 +1,44 @@
+# Python & Testing artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Large Model weights (keep directory structure with .gitkeep)
+models/trained/*
+!models/trained/.gitkeep
+models/artifacts/*
+!models/artifacts/.gitkeep
+*.pt
+*.pth
+*.onnx
+*.joblib
+*.pkl
+*.bin
+
+# Datasets (keep directory structure with .gitkeep)
+datasets/raw/*
+!datasets/raw/.gitkeep
+datasets/processed/*
+!datasets/processed/.gitkeep
+*.csv
+*.parquet
+*.jsonl
+*.h5
+*.zip
+*.tar.gz
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+*.log
+

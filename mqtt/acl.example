@@ -1,0 +1,34 @@
+# Authenticated profile. Separate identities; devices may publish only their own topics.
+user backend
+topic read building/#
+topic read $SYS/broker/uptime
+
+user esp32_main_01
+topic write building/+/esp32_main_01/telemetry
+topic write building/+/esp32_main_01/events
+topic write building/+/esp32_main_01/status
+topic write building/+/esp32_main_01/availability
+topic write building/+/+/esp32_main_01/telemetry
+topic write building/+/+/esp32_main_01/events
+topic write building/+/+/esp32_main_01/status
+topic write building/+/+/esp32_main_01/availability
+
+user esp32_cam_01
+topic write building/+/esp32_cam_01/camera/status
+topic write building/+/esp32_cam_01/status
+topic write building/+/esp32_cam_01/availability
+topic write building/+/+/esp32_cam_01/camera/status
+topic write building/+/+/esp32_cam_01/status
+topic write building/+/+/esp32_cam_01/availability
+
+user simulator
+topic write building/+/sim_node_01/camera/status
+topic write building/+/+/sim_node_01/camera/status
+topic write building/+/sim_node_01/telemetry
+topic write building/+/sim_node_01/events
+topic write building/+/sim_node_01/status
+topic write building/+/sim_node_01/availability
+topic write building/+/+/sim_node_01/telemetry
+topic write building/+/+/sim_node_01/events
+topic write building/+/+/sim_node_01/status
+topic write building/+/+/sim_node_01/availability
