@@ -1,5 +1,8 @@
 from typing import List, Dict, Any
-from ..analytics.statistics import compute_series_stats, calculate_zscore
+try:
+    from ..analytics.statistics import compute_series_stats, calculate_zscore
+except (ImportError, ValueError):
+    from analytics.statistics import compute_series_stats, calculate_zscore
 
 class StatisticalAnomalyDetector:
     """
@@ -33,7 +36,7 @@ class StatisticalAnomalyDetector:
         mean_val = stats["mean"]
         std_val = stats["std"]
 
-        if std_val is None or std_val == 0.0:
+        if mean_val is None or std_val is None or std_val == 0.0:
             return []
 
         anomalies = []

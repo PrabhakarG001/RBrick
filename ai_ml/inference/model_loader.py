@@ -45,3 +45,46 @@ class ModelLoader:
             self.model_metadata["note"] = "No trained model weights found in models/trained/; using statistical rule engine."
 
         return self.model_metadata
+
+    def load_multilabel_model(self, model_path: Optional[str] = None) -> Optional[BaseModelInterface]:
+        """
+        Loads the trained multi-label IoT building safety model artifact.
+        Handles missing or invalid artifacts explicitly, setting appropriate fallback metadata.
+        """
+        from pathlib import Path
+        from .multilabel_model import MultiLabelIoTModel, DEFAULT_MODEL_PATH
+        target = Path(model_path) if model_path else DEFAULT_MODEL_PATH
+        if not target.exists():
+            self.loaded_model = None
+            self.model_metadata = {
+                "loaded": False,
+                "engine": "iot-building-safety-multilabel",
+                "error": f"Model artifact not found at {target}",
+                "note": "Artifact missing; using statistical fallback.",
+            }
+            return None
+
+        try:
+            model = MultiLabelIoTModel(target)
+            if model.is_loaded:
+                self.loaded_model = model
+                self.model_metadata = model.get_metadata()
+                return model
+            else:
+                self.loaded_model = None
+                self.model_metadata = {
+                    "loaded": False,
+                    "engine": "iot-building-safety-multilabel",
+                    "error": f"Failed to load model artifact at {target}",
+                    "note": "Artifact invalid; using statistical fallback.",
+                }
+                return None
+        except Exception as exc:
+            self.loaded_model = None
+            self.model_metadata = {
+                "loaded": False,
+                "engine": "iot-building-safety-multilabel",
+                "error": str(exc),
+                "note": "Exception loading artifact; using statistical fallback.",
+            }
+            return None

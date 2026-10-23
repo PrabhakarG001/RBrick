@@ -1,10 +1,18 @@
 from typing import Protocol
-from ..model_config import RuleConfig
-from ..schemas import PredictionInput, PredictionOutput
-from ..risk_engine import analyze
+
+try:
+    from ..model_config import RuleConfig
+    from ..schemas import PredictionInput, PredictionOutput
+    from ..risk_engine import analyze
+except (ImportError, ValueError):
+    from model_config import RuleConfig
+    from schemas import PredictionInput, PredictionOutput
+    from risk_engine import analyze
+
 from .model_interface import BaseModelInterface
 from .model_loader import ModelLoader
 from .anomaly_detector import StatisticalAnomalyDetector
+from .multilabel_model import MultiLabelIoTModel
 
 class Predictor(Protocol):
     def predict(self, reading: PredictionInput) -> PredictionOutput: ...
@@ -21,5 +29,6 @@ __all__ = [
     "RulesPredictor",
     "BaseModelInterface",
     "ModelLoader",
-    "StatisticalAnomalyDetector"
+    "StatisticalAnomalyDetector",
+    "MultiLabelIoTModel"
 ]

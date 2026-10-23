@@ -145,5 +145,64 @@ The React frontend is untouched. Future UI work may surface the new unavailable
 analysis state more prominently; this batch does not add a re-analysis worker,
 trained model, camera firmware or any Phase 7+ feature.
 
+## Multi-Label IoT Building Safety ML Model
+
+The trained multi-label classifier is saved at:
+`ai_ml/models/iot_building_safety_multilabel.joblib`
+
+### Architecture & Capabilities:
+- **Model Type:** Multi-output scikit-learn Random Forest ensemble with a reproducible `ColumnTransformer` preprocessing pipeline.
+- **Targets (10 Independent Binary Outputs):**
+  1. `event_fire_suspected`
+  2. `event_smoke_suspected`
+  3. `event_combustible_gas_suspected`
+  4. `event_unauthorized_intrusion`
+  5. `event_vibration_anomaly`
+  6. `event_structural_vibration_review`
+  7. `event_heat_risk`
+  8. `event_high_humidity_mold_risk`
+  9. `event_device_fault`
+  10. `event_network_degradation`
+- **Simultaneous Events:** Each sensor snapshot can activate multiple concurrent event labels without forcing a single mutually exclusive classification.
+- **Hardware Emergency Override (SOS):** The physical hardware emergency button (`sos_button_pressed` / `event_sos_triggered`) is strictly excluded from the ML feature set. It executes as a deterministic, zero-latency emergency override that triggers immediately without relying on probabilistic model predictions.
+- **Target Leakage Prevention:** Feature matrix excludes all labels, record IDs, split indicators, synthetic flags, scenario types, safety scores, alert priorities, buzzer commands, and recommended actions.
+
+### Training Entry Point & Evaluation:
+To retrain or re-evaluate the model from the workspace root:
+```powershell
+python ai_ml/train_multilabel.py
+```
+Primary dataset: `ai_ml/datasets/iot_building_safety_model_input_targets.csv` (12,000 rows, 50 columns; 8,400 train, 1,800 validation, 1,800 test).
+Reports and predictions are written to:
+- `ai_ml/analytics/multilabel_model_evaluation_report.md`
+- `ai_ml/analytics/multilabel_model_evaluation_report.json`
+- `ai_ml/analytics/held_out_test_predictions.csv`
+
+### Invoking from Python Backend / Service:
+```python
+from ai_ml.inference import MultiLabelIoTModel, ModelLoader
+
+# Method 1: Direct instantiation
+model = MultiLabelIoTModel("ai_ml/models/iot_building_safety_multilabel.joblib")
+prediction = model.predict_multi_label({
+    "zone_id": "SERVER_ROOM",
+    "monitoring_role": "SECURITY_ZONE",
+    "temperature_c": 45.0,
+    "mq2_adc_raw_0_4095": 2800,
+    "flame_detected_normalized": 1,
+})
+print("Active Events:", prediction["active_events"])
+print("Emergency Override (SOS):", prediction["emergency_override"])
+
+# Method 2: Via ModelLoader
+loader = ModelLoader("ai_ml/models/trained")
+model = loader.load_multilabel_model()
+```
+
+### Running Automated Tests:
+```powershell
+pytest ai_ml/tests -v
+```
+
 Primary references: [FastAPI testing](https://fastapi.tiangolo.com/tutorial/testing/)
 and [Pydantic strict mode](https://docs.pydantic.dev/latest/concepts/strict_mode/).
