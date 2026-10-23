@@ -1,0 +1,175 @@
+{
+  "metadata": {
+    "model_version": "iot-building-safety-multilabel-v1.0.0",
+    "trained_at_utc": "2026-10-23T12:58:16.099964+00:00",
+    "primary_dataset": "C:\\Users\\Priyanshu Mishra\\Downloads\\ResillioX\\ai_ml\\datasets\\iot_building_safety_model_input_targets.csv",
+    "split_counts": {
+      "train": 8400,
+      "validation": 1800,
+      "test": 1800
+    },
+    "disclaimer": "Simulated synthetic sensor dataset only. Algorithmic approximations designed for multi-label IoT building safety workflow training. NOT validated real-world physical calibration data."
+  },
+  "overall_test_metrics": {
+    "exact_match_accuracy": 0.8122,
+    "hamming_loss": 0.02294,
+    "micro_f1": 0.9251,
+    "micro_precision": 0.9114,
+    "micro_recall": 0.9393,
+    "macro_f1": 0.9169,
+    "macro_precision": 0.9121,
+    "macro_recall": 0.9419,
+    "default_exact_match_at_0_50": 0.8122,
+    "default_macro_f1_at_0_50": 0.8805
+  },
+  "per_label_metrics": {
+    "event_fire_suspected": {
+      "threshold": 0.23,
+      "precision": 0.9658,
+      "recall": 0.9895,
+      "f1": 0.9775,
+      "support": 285,
+      "pr_auc": 0.995
+    },
+    "event_smoke_suspected": {
+      "threshold": 0.37,
+      "precision": 0.9612,
+      "recall": 0.8435,
+      "f1": 0.8986,
+      "support": 294,
+      "pr_auc": 0.9586
+    },
+    "event_combustible_gas_suspected": {
+      "threshold": 0.42,
+      "precision": 0.7764,
+      "recall": 0.6971,
+      "f1": 0.7346,
+      "support": 274,
+      "pr_auc": 0.7503
+    },
+    "event_unauthorized_intrusion": {
+      "threshold": 0.32,
+      "precision": 0.9683,
+      "recall": 0.9549,
+      "f1": 0.9615,
+      "support": 288,
+      "pr_auc": 0.9959
+    },
+    "event_vibration_anomaly": {
+      "threshold": 0.11,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 299,
+      "pr_auc": 1.0
+    },
+    "event_structural_vibration_review": {
+      "threshold": 0.05,
+      "precision": 0.4749,
+      "recall": 1.0,
+      "f1": 0.644,
+      "support": 142,
+      "pr_auc": 0.527
+    },
+    "event_heat_risk": {
+      "threshold": 0.19,
+      "precision": 0.9888,
+      "recall": 1.0,
+      "f1": 0.9944,
+      "support": 264,
+      "pr_auc": 1.0
+    },
+    "event_high_humidity_mold_risk": {
+      "threshold": 0.25,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 282,
+      "pr_auc": 1.0
+    },
+    "event_device_fault": {
+      "threshold": 0.31,
+      "precision": 0.9894,
+      "recall": 0.9336,
+      "f1": 0.9607,
+      "support": 301,
+      "pr_auc": 0.9827
+    },
+    "event_network_degradation": {
+      "threshold": 0.27,
+      "precision": 0.9965,
+      "recall": 1.0,
+      "f1": 0.9983,
+      "support": 288,
+      "pr_auc": 1.0
+    }
+  },
+  "confusion_matrices": {
+    "event_fire_suspected": {
+      "tn": 1505,
+      "fp": 10,
+      "fn": 3,
+      "tp": 282
+    },
+    "event_smoke_suspected": {
+      "tn": 1496,
+      "fp": 10,
+      "fn": 46,
+      "tp": 248
+    },
+    "event_combustible_gas_suspected": {
+      "tn": 1471,
+      "fp": 55,
+      "fn": 83,
+      "tp": 191
+    },
+    "event_unauthorized_intrusion": {
+      "tn": 1503,
+      "fp": 9,
+      "fn": 13,
+      "tp": 275
+    },
+    "event_vibration_anomaly": {
+      "tn": 1501,
+      "fp": 0,
+      "fn": 0,
+      "tp": 299
+    },
+    "event_structural_vibration_review": {
+      "tn": 1501,
+      "fp": 157,
+      "fn": 0,
+      "tp": 142
+    },
+    "event_heat_risk": {
+      "tn": 1533,
+      "fp": 3,
+      "fn": 0,
+      "tp": 264
+    },
+    "event_high_humidity_mold_risk": {
+      "tn": 1518,
+      "fp": 0,
+      "fn": 0,
+      "tp": 282
+    },
+    "event_device_fault": {
+      "tn": 1496,
+      "fp": 3,
+      "fn": 20,
+      "tp": 281
+    },
+    "event_network_degradation": {
+      "tn": 1511,
+      "fp": 1,
+      "fn": 0,
+      "tp": 288
+    }
+  },
+  "cross_checks": {
+    "full_csv_record_id_exact_match": true,
+    "full_csv_target_differences": {},
+    "logic_combinations_count": 2048,
+    "logic_has_all_targets": true
+  }
+}
