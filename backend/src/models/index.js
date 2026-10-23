@@ -12,7 +12,7 @@ const readingSchema = new Schema({
   receivedAt: { type: Date, required: true },
   sensors: { type: Map, of: Schema.Types.Mixed, required: true },
   topic: { type: String, required: true },
-  // resilliox-v1 extensions (optional so flat contracts keep working).
+  // rbrick-v1 extensions (optional so flat contracts keep working).
   buildingId: { type: String, maxlength: 128 },
   zoneId: { type: String, maxlength: 128 },
   source: { type: String, enum: ['hardware', 'simulation'] },
@@ -40,7 +40,7 @@ const alertSchema = new Schema({
   securityEventId: { type: Schema.Types.ObjectId, ref: 'SecurityEvent' },
   activeSecurityKey: { type: String, maxlength: 400 },
   acknowledgedBy: String, resolvedBy: String, demoScope: String,
-  // resilliox-v1 extensions.
+  // rbrick-v1 extensions.
   zoneId: { type: String, maxlength: 128 },
   incidentId: { type: String, maxlength: 256 },
   source: { type: String, enum: ['hardware', 'simulation','operator','system'] },
@@ -56,7 +56,7 @@ const deviceSchema = new Schema({
   lastSeenAt: Date,
   name: { type: String, maxlength: 100 },
   area: { type: String, maxlength: 100 },
-  // resilliox-v1 extensions.
+  // rbrick-v1 extensions.
   buildingId: { type: String, maxlength: 128 },
   zoneId: { type: String, maxlength: 128 },
   firmwareVersion: { type: String, maxlength: 32 },

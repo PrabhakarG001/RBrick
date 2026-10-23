@@ -1,4 +1,4 @@
-# ResillioX Python risk service
+# RBrick Python risk service
 
 Python/FastAPI/Uvicorn performs risk inference; Express handles MQTT validation,
 storage and realtime delivery. There is no trained model. `python-rules-v1`
@@ -133,7 +133,7 @@ This uses installed Windows Mosquitto and MongoDB 8.2, plus the workspace Python
 environment, on temporary loopback ports 18887/27028/18001. It refuses occupied
 ports, creates fresh test credentials and an isolated MongoDB replica set, and
 runs test files sequentially because broker fixtures share an ACL simulator ID.
-Test databases have random resilliox_*_test_ names and are dropped by their test
+Test databases have random rbrick_*_test_ names and are dropped by their test
 cleanup; it never uses the private Atlas URI. Processes are stopped after tests.
 Ignored .docker-validation/integration-* contains local test configuration/logs.
 Override MOSQUITTO_DIRECTORY, INTEGRATION_MONGOD or INTEGRATION_PYTHON for another

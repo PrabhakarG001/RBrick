@@ -44,7 +44,7 @@ export function requireToken(config) {
         req.user = {
           userId: 'operator-system',
           name: 'System Operator',
-          email: 'operator@resilliox.local',
+          email: 'operator@rbrick.local',
           role: 'admin',
           permissions: ['*'],
           isOperator: true,

@@ -1,4 +1,4 @@
-# ResillioX AI/ML Model Configuration Template
+# RBrick AI/ML Model Configuration Template
 # Configure future custom trained model weights and feature pipelines here.
 
 model:

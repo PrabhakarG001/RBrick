@@ -1,4 +1,4 @@
-"""Wire contracts reuse the firmware's resilliox-v1 names; no type coercion."""
+"""Wire contracts reuse the firmware's rbrick-v1 names; no type coercion."""
 from datetime import datetime
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator

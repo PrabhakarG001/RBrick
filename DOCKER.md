@@ -1,4 +1,4 @@
-﻿# ResillioX service startup and deployment
+﻿# RBrick service startup and deployment
 
 The existing React frontend, Express backend, Mosquitto broker and Python
 FastAPI/Uvicorn engine are preserved. The optional local Compose override adds

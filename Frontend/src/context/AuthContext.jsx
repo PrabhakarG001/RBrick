@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { loginApi, registerApi, getMeApi, updateProfileApi, logoutApi } from '../services/api';
 
+import { readBrandStorage, writeBrandStorage, clearBrandStorage } from '../services/brandStorage';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('ravynx_token') || localStorage.getItem('resilliox_token') || null);
+  const [token, setToken] = useState(readBrandStorage('token') || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,9 +23,9 @@ export const AuthProvider = ({ children }) => {
           // Keep demo state
           setUser({
             name: 'Building Operator',
-            email: 'operator@resilliox.local',
+            email: 'operator@rbrick.local',
             role: 'admin',
-            company: 'ResillioX',
+            company: 'RBrick',
           });
         }
       } else {
@@ -32,7 +34,7 @@ export const AuthProvider = ({ children }) => {
           name: 'Building Occupant',
           email: '',
           role: 'student',
-          company: 'ResillioX',
+          company: 'RBrick',
         });
       }
       setLoading(false);
@@ -44,8 +46,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const res = await loginApi(credentials);
     if (res.success && res.token) {
-      localStorage.setItem('ravynx_token', res.token);
-      localStorage.setItem('resilliox_token', res.token);
+      writeBrandStorage('token', res.token);
       setToken(res.token);
       setUser(res.user);
     }
@@ -55,8 +56,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     const res = await registerApi(userData);
     if (res.success && res.token) {
-      localStorage.setItem('ravynx_token', res.token);
-      localStorage.setItem('resilliox_token', res.token);
+      writeBrandStorage('token', res.token);
       setToken(res.token);
       setUser(res.user);
     }
@@ -73,14 +73,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     try { logoutApi(); } catch {}
-    localStorage.removeItem('ravynx_token');
-    localStorage.removeItem('resilliox_token');
+    clearBrandStorage('token');
     setToken(null);
     setUser({
       name: 'Building Occupant',
       email: '',
       role: 'student',
-      company: 'ResillioX',
+      company: 'RBrick',
     });
   };
 

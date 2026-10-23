@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""ResillioX MQTT sensor simulator.
+"""RBrick MQTT sensor simulator.
 
-Publishes synthetic ESP32-style telemetry to the ResillioX Mosquitto broker so
+Publishes synthetic ESP32-style telemetry to the RBrick Mosquitto broker so
 the backend pipeline (MQTT -> risk engine -> MongoDB -> Socket.IO) can be
 verified without physical hardware.
 
@@ -55,7 +55,7 @@ SCHEMA_VERSION = "1.0"
 FIRMWARE_VERSION = "sim-1.0.0"
 SOURCE = "simulation"  # Never claim hardware readings.
 
-log = logging.getLogger("resilliox-simulator")
+log = logging.getLogger("rbrick-simulator")
 
 # Scenario definitions. Values are synthetic starting points only; they are
 # not calibrated measurements of any real sensor.
@@ -94,7 +94,7 @@ def utc_now() -> str:
 
 
 def build_telemetry(args: argparse.Namespace, scenario: dict) -> dict:
-    """Build one nested resilliox-v1 telemetry payload."""
+    """Build one nested rbrick-v1 telemetry payload."""
     sensors = {
         "temperature": round(random.uniform(*scenario["temperature"]), 1),
         "humidity": round(random.uniform(*scenario["humidity"]), 1),
@@ -288,7 +288,7 @@ class Simulator:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="ResillioX MQTT sensor simulator (source=simulation)")
+    parser = argparse.ArgumentParser(description="RBrick MQTT sensor simulator (source=simulation)")
     parser.add_argument("--host", default=os.environ.get("MQTT_HOST", "127.0.0.1"))
     parser.add_argument("--port", type=int, default=int(os.environ.get("MQTT_PORT", "1883")))
     parser.add_argument("--username", default=os.environ.get("MQTT_USERNAME", ""))
@@ -297,7 +297,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--zone-id", default="floor01_room101")
     parser.add_argument("--device-id", default="sim_node_01")
     parser.add_argument("--client-id", default=None,
-                        help="MQTT client ID (default: resiliox-sim-<random>)")
+                        help="MQTT client ID (default: rbrick-sim-<random>)")
     parser.add_argument("--scenario", choices=sorted(SCENARIOS), default="normal")
     parser.add_argument("--interval", type=float, default=5.0,
                         help="Seconds between telemetry messages (default 5)")
@@ -310,7 +310,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
     if args.client_id is None:
-        args.client_id = f"resiliox-sim-{uuid.uuid4().hex[:8]}"
+        args.client_id = f"rbrick-sim-{uuid.uuid4().hex[:8]}"
     if args.device_id == "" or "/" in args.device_id:
         parser.error("--device-id must be a non-empty topic-safe segment")
     for name in ("device_id", "building_id", "zone_id"):

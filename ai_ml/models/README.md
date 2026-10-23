@@ -1,4 +1,4 @@
-# ResillioX Trained Models Workspace
+# RBrick Trained Models Workspace
 
 This directory is reserved for future custom trained AI/ML models, weights, and preprocessor artifacts.
 

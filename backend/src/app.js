@@ -24,7 +24,7 @@ export function createApp(config, status, services = {}) {
   app.use(express.json({ limit: '10mb' }));
   app.get('/api/health/live', (req, res) => res.json({ success: true, status: 'alive' }));
   app.get('/api/health/ready', (req, res) => {
-    const aiRequired = config.mqttEnabled && config.payloadFormat === 'resilliox-v1';
+    const aiRequired = config.mqttEnabled && config.payloadFormat === 'rbrick-v1';
     const ready = status.database && (!config.mqttEnabled || status.mqtt) && (!aiRequired || status.ai === true) && config.apiToken.length >= 32;
     res.status(ready ? 200 : 503).json({ success: Boolean(ready), database: status.database ? 'connected' : 'unavailable',
       mqtt: config.mqttEnabled ? (status.mqtt ? 'subscribed' : 'unavailable') : 'disabled',
@@ -41,8 +41,8 @@ export function createApp(config, status, services = {}) {
     offlineAfterSeconds: config.offlineAfterSeconds,
     // v1 dashboard needs the fixed sensor vocabulary when no flat display
     // mapping is configured. Names come from the shared schema, never guessed.
-    payloadFormat: config.payloadFormat,
-    v1Sensors: config.payloadFormat === 'resilliox-v1'
+    payloadFormat: config.payloadFormat === 'rbrick-v1' ? 'resilliox-v1' : config.payloadFormat,
+    v1Sensors: config.payloadFormat === 'rbrick-v1'
       ? SENSOR_NAMES_LIST.map(name => ({ name, kind: NUMERIC_SENSORS_LIST.includes(name) ? 'number' : 'boolean' }))
       : [],
   }));

@@ -1,5 +1,5 @@
-#ifndef RESILLIOX_SAFETY_SIGNALS_H
-#define RESILLIOX_SAFETY_SIGNALS_H
+#ifndef RBRICK_SAFETY_SIGNALS_H
+#define RBRICK_SAFETY_SIGNALS_H
 #include <stdint.h>
 #include <math.h>
 

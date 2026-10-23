@@ -1,4 +1,4 @@
-param([string]$DatabaseName='building_safety')
+param([string]$DatabaseName='rbrick')
 $ErrorActionPreference='Stop'
 if($DatabaseName -notmatch '^[A-Za-z0-9_-]{1,63}$'){throw 'Invalid database name'}
 $directory=Join-Path $PSScriptRoot '.secrets'
@@ -15,12 +15,12 @@ function Save-Secret([string]$Name,[string]$Value) {
 }
 $rootPassword=New-Secret
 $appPassword=New-Secret
-Save-Secret 'mongo_root_username' 'resilliox_root'
+Save-Secret 'mongo_root_username' 'rbrick_root'
 Save-Secret 'mongo_root_password' $rootPassword
 Save-Secret 'mongo_app_password' $appPassword
 Save-Secret 'mongo_keyfile' (New-Secret 756)
 $encoded=[uri]::EscapeDataString($appPassword)
-$uri='mongodb://resilliox_app:{0}@mongo:27017/?replicaSet=rs0&authSource={1}' -f $encoded,$DatabaseName
+$uri='mongodb://rbrick_app:{0}@mongo:27017/?replicaSet=rs0&authSource={1}' -f $encoded,$DatabaseName
 $lines=@("DB_NAME=$DatabaseName", "LOCAL_MONGODB_URI=$uri",('IOT_API_TOKEN='+ (New-Secret)),('AI_SERVICE_TOKEN='+ (New-Secret)))
 [IO.File]::WriteAllLines((Join-Path $directory 'local.env'),$lines,(New-Object Text.UTF8Encoding $false))
 $mqtt=Join-Path (Split-Path $PSScriptRoot -Parent) 'mqtt/Initialize-MqttAuth.ps1'

@@ -10,7 +10,7 @@ import { ensureIndexes,Device,Alert,SensorReading,MaintenanceTask } from '../src
 test('authorized incident approval creates linked maintenance once and preserves existing status workflows',{
   skip:!process.env.DASHBOARD_TEST_URI,timeout:20000,
 },async t=>{
-  const dbName=`resilliox_maintenance_test_${randomUUID().replaceAll('-','')}`;
+  const dbName=`rbrick_maintenance_test_${randomUUID().replaceAll('-','')}`;
   await mongoose.connect(process.env.DASHBOARD_TEST_URI,{dbName});
   t.after(async()=>{assert.equal(mongoose.connection.name,dbName);await mongoose.connection.dropDatabase();await mongoose.disconnect();});
   await ensureIndexes();

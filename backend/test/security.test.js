@@ -21,7 +21,7 @@ test('security operating hours handle time zones, weekdays and overnight shifts'
 test('security module persists simulation, rules, camera samples, visitor transitions, audits and scoped reset',{
   skip:!process.env.DASHBOARD_TEST_URI,timeout:90000,
 },async t=>{
-  const dbName=`resilliox_security_test_${randomUUID().replaceAll('-','')}`;
+  const dbName=`rbrick_security_test_${randomUUID().replaceAll('-','')}`;
   let server;
   await mongoose.connect(process.env.DASHBOARD_TEST_URI,{dbName,serverSelectionTimeoutMS:5000});
   t.after(async()=>{

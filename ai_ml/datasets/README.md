@@ -1,4 +1,4 @@
-# ResillioX Dataset Workspace
+# RBrick Dataset Workspace
 
 This folder is dedicated to housing datasets for the Building Safety, Security, and Maintenance Monitoring System.
 

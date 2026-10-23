@@ -21,8 +21,8 @@ const dir=path.join(root,'.docker-validation',`dashboard-live-${randomUUID()}`);
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const processes=[];
 let ws,server,realtime,subscriber,publisher,diagnostic,camera;
-const dbName=process.env.RESTART_TEST_DB || `resilliox_ui_test_${randomUUID().replaceAll('-','')}`;
-assert.match(dbName,/^resilliox_ui_test_[a-f0-9]+$/);
+const dbName=process.env.RESTART_TEST_DB || `rbrick_ui_test_${randomUUID().replaceAll('-','')}`;
+assert.match(dbName,/^rbrick_ui_test_[a-f0-9]+$/);
 const token=`ui-test-${randomUUID()}`;
 let aiUnavailable=false;
 function start(exe,args,cwd=root,env=process.env) {

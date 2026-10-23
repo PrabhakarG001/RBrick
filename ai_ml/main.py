@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     app.state.token = os.environ.get("AI_SERVICE_TOKEN", "")
     yield
 
-app = FastAPI(title="ResillioX Python Risk Service", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="RBrick Python Risk Service", version="1.0.0", lifespan=lifespan)
 
 @app.exception_handler(RequestValidationError)
 async def invalid_request(request: Request, exc: RequestValidationError):

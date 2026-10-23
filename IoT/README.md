@@ -1,4 +1,4 @@
-﻿# ResillioX IoT layer
+﻿# RBrick IoT layer
 
 - `firmware/esp32_main/`: modular Arduino ESP32 firmware, reference build tested;
   GPIO assignment and physical validation remain pending.
@@ -13,7 +13,7 @@ No trained ML model is implemented. Phase 6 uses the Python/FastAPI rule engine
 in `ai_ml/`; the old JavaScript rules remain a historical test reference, with
 no production inference import or fallback. See `INTEGRATION_PHASES_4_6.md`.
 
-## Existing resilliox-v1 contract
+## Existing rbrick-v1 contract
 
 Authoritative schema: `backend/src/services/telemetrySchema.js`. Reuse string
 `schema_version: "1.0"` and nested `sensors`, rather than introducing a second

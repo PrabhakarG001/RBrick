@@ -55,10 +55,10 @@ test('camera APIs fail closed without token and report unconfigured devices hone
 test('camera snapshot capture, storage and retrieval work end to end on isolated MongoDB', { skip: !process.env.DASHBOARD_TEST_URI }, async t => {
   const { mongoose } = await import('../src/config/database.js');
   const { ensureIndexes, CameraSnapshot, Alert, Device } = await import('../src/models/index.js');
-  const dbName = `resilliox_camera_test_${randomUUID().replaceAll('-', '')}`;
+  const dbName = `rbrick_camera_test_${randomUUID().replaceAll('-', '')}`;
   await mongoose.connect(process.env.DASHBOARD_TEST_URI, { dbName, serverSelectionTimeoutMS: 5000 });
   t.after(async () => {
-    assert(mongoose.connection.name.startsWith('resilliox_camera_test_'));
+    assert(mongoose.connection.name.startsWith('rbrick_camera_test_'));
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
   });

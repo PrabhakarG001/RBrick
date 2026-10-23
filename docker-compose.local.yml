@@ -2,6 +2,7 @@
 # Load deployment/.secrets/local.env and mqtt/.secrets/backend.env after .env.
 services:
   mongo:
+    image: rbrick-mongo:local
     build:
       context: ./deployment/mongo
     environment:
@@ -18,7 +19,7 @@ services:
       - mongo-config:/data/configdb
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--nodb", "/opt/resilliox/init-replica.js"]
+      test: ["CMD", "mongosh", "--quiet", "--nodb", "/opt/rbrick/init-replica.js"]
       interval: 10s
       timeout: 8s
       start_period: 40s

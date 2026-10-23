@@ -1,4 +1,4 @@
-﻿# ResillioX MQTT layer
+﻿# RBrick MQTT layer
 
 The existing demo `mosquitto.conf` is preserved. Compose publishes it on
 loopback by default. Use the authenticated profile before enabling LAN access.
@@ -54,7 +54,7 @@ were unavailable in this session; native broker checks passed.
 The existing `building/{building_id}/{zone_id}/{device_id}/...` topics remain
 supported. Leave `MQTT_TOPIC` empty to subscribe to both sets; explicit custom
 subscriptions must include whichever format your devices publish. Backend
-`MQTT_PAYLOAD_FORMAT=resilliox-v1` uses the existing nested schema version
+`MQTT_PAYLOAD_FORMAT=rbrick-v1` uses the existing nested schema version
 `"1.0"`, not a new parallel consumer. The legacy flat consumer remains opt-in.
 Device/zone IDs must match payload IDs; building ID must also match on long
 topics. Short topics still carry building_id in JSON. Use globally unique device

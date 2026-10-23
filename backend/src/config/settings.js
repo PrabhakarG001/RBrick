@@ -46,9 +46,13 @@ export function settings(env = process.env) {
   const databaseTls = z.enum(['true','false']).parse(env.MONGODB_TLS || 'true') === 'true';
   if ((env.MONGODB_URI || '').startsWith('mongodb+srv://') && !databaseTls) throw new Error('SRV/Atlas connections require TLS');
   const contract = parseContract(env);
-  // Default matches documented compose/env contract: nested resilliox-v1.
+  // Default matches documented compose/env contract: nested rbrick-v1.
   // Legacy flat contract requires explicit MQTT_PAYLOAD_FORMAT=flat.
-  const payloadFormat = z.enum(['flat', 'resilliox-v1']).parse(env.MQTT_PAYLOAD_FORMAT || 'resilliox-v1');
+  const requestedFormat = env.MQTT_PAYLOAD_FORMAT || 'rbrick-v1';
+  // Existing installations keep their configured schema name; the wire data is identical.
+  const payloadFormat = z.enum(['flat', 'rbrick-v1']).parse(
+    requestedFormat === 'resilliox-v1' ? 'rbrick-v1' : requestedFormat,
+  );
   const mqttEnabled = z.enum(['true', 'false']).parse(env.MQTT_ENABLED || 'false') === 'true';
   if (mqttEnabled) {
     if (payloadFormat === 'flat') {
@@ -65,7 +69,7 @@ export function settings(env = process.env) {
     if (Boolean(env.MQTT_USERNAME) !== Boolean(env.MQTT_PASSWORD)) throw new Error('Incomplete MQTT credentials');
   }
   // v1 topic list: empty = built-in defaults (building/+/+/+/... set).
-  const mqttTopics = payloadFormat === 'resilliox-v1'
+  const mqttTopics = payloadFormat === 'rbrick-v1'
     ? (env.MQTT_TOPIC || '').split(',').map(s => s.trim()).filter(Boolean)
     : undefined;
   const riskThresholds = JSON.parse(env.RISK_THRESHOLDS_JSON || '{}');

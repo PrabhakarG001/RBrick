@@ -57,7 +57,7 @@ export function systemRoutes(config, status) {
 
   // Public liveness/readiness snapshot (mirrors /api/health/*, no secrets).
   router.get('/health', (req, res) => {
-    const aiRequired = config.mqttEnabled && config.payloadFormat === 'resilliox-v1';
+    const aiRequired = config.mqttEnabled && config.payloadFormat === 'rbrick-v1';
     const ready = status.database && (!config.mqttEnabled || status.mqtt) && (!aiRequired || status.ai === true) && config.apiToken.length >= 32;
     res.status(ready ? 200 : 503).json({
       success: true, status: ready ? 'ready' : 'degraded',
@@ -172,7 +172,7 @@ export function systemRoutes(config, status) {
       ai: { available: status.ai ?? null, lastError: status.aiLastError ?? null,
         lastSuccessAt: status.aiLastSuccessAt ?? null, modelVersion: 'python-rules-v1' },
       mqttConnectedAt: status.mqttConnectedAt ?? null,
-      payloadFormat: config.payloadFormat,
+      payloadFormat: config.payloadFormat === 'rbrick-v1' ? 'resilliox-v1' : config.payloadFormat,
       socketClients: status.socketClients ?? 0,
       counters: {
         persisted: status.persisted ?? 0, rejected: status.rejected ?? 0,

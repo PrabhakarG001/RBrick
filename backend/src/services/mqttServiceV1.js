@@ -1,4 +1,4 @@
-// resilliox-v1 MQTT subscriber.
+// rbrick-v1 MQTT subscriber.
 //
 // Subscribes to the documented topic set (mqtt/README.md, IoT/README.md):
 //   building/+/+/+/telemetry, .../events, .../status, .../availability,

@@ -26,7 +26,7 @@ async function wait(predicate, message) {
 test('full Python pipeline: persistence, REST, sockets, dedup, AI failures and transaction recovery', {
   skip: !enabled, timeout: 90000,
 }, async t => {
-  const dbName = `resilliox_pipeline_test_${randomUUID().replaceAll('-','')}`;
+  const dbName = `rbrick_pipeline_test_${randomUUID().replaceAll('-','')}`;
   let server, proxy, realtime, subscriber, publisher, socket;
   await mongoose.connect(process.env.PIPELINE_TEST_URI,{ dbName, serverSelectionTimeoutMS:5000 });
   t.after(async () => {
@@ -36,7 +36,7 @@ test('full Python pipeline: persistence, REST, sockets, dedup, AI failures and t
     if (realtime) await new Promise(resolve => realtime.io.close(resolve));
     if (server?.listening) await new Promise(resolve => server.close(resolve));
     if (proxy) { proxy.closeAllConnections(); await new Promise(resolve => proxy.close(resolve)); }
-    assert(mongoose.connection.name.startsWith('resilliox_pipeline_test_'));
+    assert(mongoose.connection.name.startsWith('rbrick_pipeline_test_'));
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
   });
@@ -57,7 +57,7 @@ test('full Python pipeline: persistence, REST, sockets, dedup, AI failures and t
   }).listen(0,'127.0.0.1');
   await once(proxy,'listening');
   const token='pipeline-test-token-'.repeat(2);
-  const config=settings({ IOT_API_TOKEN:token, MQTT_ENABLED:'true', MQTT_PAYLOAD_FORMAT:'resilliox-v1',
+  const config=settings({ IOT_API_TOKEN:token, MQTT_ENABLED:'true', MQTT_PAYLOAD_FORMAT:'rbrick-v1',
     MQTT_URL:process.env.PIPELINE_TEST_MQTT_URL, MQTT_CLIENT_ID:`pipeline-${randomUUID()}`,
     MQTT_USERNAME:'backend',MQTT_PASSWORD:process.env.TEST_BACKEND_MQTT_PASSWORD,
     AI_SERVICE_URL:`http://127.0.0.1:${proxy.address().port}`,AI_TIMEOUT_MS:'200' });

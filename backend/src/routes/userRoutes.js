@@ -17,7 +17,7 @@ const createUserSchema = z.object({
   email: z.string().trim().email().toLowerCase(),
   password: z.string().min(6).max(200).default('ResillioX@2026'),
   phone: z.string().trim().max(30).optional(),
-  company: z.string().trim().max(100).default('ResillioX'),
+  company: z.string().trim().max(100).default('RBrick'),
   role: z.enum(ROLES).default('student'),
   department: z.string().trim().max(100).optional(),
 });
@@ -97,7 +97,7 @@ export function userRoutes(config) {
       name: body.name,
       email: body.email,
       phone: body.phone || '',
-      company: body.company || 'ResillioX',
+      company: body.company || 'RBrick',
       passwordHash: hash,
       salt,
       role: body.role,

@@ -1,7 +1,7 @@
-# ResillioX MQTT sensor simulator
+# RBrick MQTT sensor simulator
 
 Python simulator that publishes synthetic ESP32-style telemetry to the
-ResillioX Mosquitto broker. Every payload carries `"source": "simulation"`;
+RBrick Mosquitto broker. Every payload carries `"source": "simulation"`;
 none of these values are real measurements.
 
 Schema and topic contract: [`IoT/README.md`](../README.md) and

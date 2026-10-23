@@ -1,8 +1,10 @@
+import { readBrandStorage } from './brandStorage';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Helper method for HTTP requests with Authorization header
 export async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('ravynx_token') || localStorage.getItem('resilliox_token');
+  const token = readBrandStorage('token');
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),

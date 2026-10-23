@@ -29,7 +29,7 @@ test('Mongo bootstrap handles command error documents, auth failure and idempote
 test('production database connector accepts explicit local replica-set transport',{
   skip:!process.env.DASHBOARD_TEST_URI,
 },async()=>{
-  const name=`resilliox_transport_test_${randomUUID().replaceAll('-','')}`;
+  const name=`rbrick_transport_test_${randomUUID().replaceAll('-','')}`;
   const config=settings({MONGODB_URI:process.env.DASHBOARD_TEST_URI,DB_NAME:name,MONGODB_TLS:'false'});
   try {
     assert.equal(await connectDatabase(config),true);

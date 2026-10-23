@@ -1,1 +1,1 @@
-"""ResillioX Python-only risk inference service."""
+"""RBrick Python-only risk inference service."""

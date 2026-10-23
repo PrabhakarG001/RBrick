@@ -334,7 +334,7 @@ export const Login = ({ initialMode }) => {
                                     <h3 className="text-lg font-bold text-slate-900">
                                         {policyModal === 'privacy' ? t("privacyPolicy") : t("terms")}
                                     </h3>
-                                    <p className="text-xs text-slate-500 font-medium">ResillioX Trust & Legal Framework</p>
+                                    <p className="text-xs text-slate-500 font-medium">RBrick Trust & Legal Framework</p>
                                 </div>
                                 <button
                                     type="button"
@@ -353,7 +353,7 @@ export const Login = ({ initialMode }) => {
                                             🔒 Ephemeral Memory Processing — Zero Permanent Data Storage
                                         </div>
                                         <p>
-                                            <strong>1. Data Isolation:</strong> ResillioX processes all uploaded financial, bank, and legal documents inside isolated memory enclaves. Documents are never ingested to train public AI models.
+                                            <strong>1. Data Isolation:</strong> RBrick processes all uploaded financial, bank, and legal documents inside isolated memory enclaves. Documents are never ingested to train public AI models.
                                         </p>
                                         <p>
                                             <strong>2. Encryption & Retention:</strong> All PII (Personally Identifiable Information) and document graphics are encrypted using AES-256 in transit and immediately purged post-verification.
@@ -368,7 +368,7 @@ export const Login = ({ initialMode }) => {
                                             📜 Institutional Terms of Service — Authorized Use
                                         </div>
                                         <p>
-                                            <strong>1. Authorized Access:</strong> ResillioX is provided for licensed financial institutions, underwriting teams, banks, and authorized audit professionals.
+                                            <strong>1. Authorized Access:</strong> RBrick is provided for licensed financial institutions, underwriting teams, banks, and authorized audit professionals.
                                         </p>
                                         <p>
                                             <strong>2. Explainable Intelligence:</strong> Anomaly scores and metadata checks assist decision-makers. Final underwriting authority remains with institutionally approved officers.

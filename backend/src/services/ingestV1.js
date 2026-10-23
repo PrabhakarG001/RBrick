@@ -1,4 +1,4 @@
-// resilliox-v1 ingest pipeline:
+// rbrick-v1 ingest pipeline:
 //   validated MQTT message -> Python HTTP -> MongoDB transaction -> Socket.IO
 //
 // Deduplication: SensorReading has a partial unique index on (deviceId, eventId);

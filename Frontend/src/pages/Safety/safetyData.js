@@ -1,5 +1,5 @@
 export const sensorLabels = { temperature: 'Temperature (DHT22)', humidity: 'Humidity (DHT22)', gas: 'Gas (MQ-2)', smoke: 'Smoke (MQ-2)', waterLeak: 'Water leak', doorOpen: 'Door activity', sos: 'SOS button' };
-// resilliox-v1 fixed sensor vocabulary (backend/src/services/telemetrySchema.js).
+// rbrick-v1 fixed sensor vocabulary (backend/src/services/telemetrySchema.js).
 export const v1SensorLabels = { temperature: 'Temperature (DHT22)', humidity: 'Humidity (DHT22)', mq2_raw: 'MQ-2 raw ADC', vibration_rms: 'Vibration RMS (MPU6050)', sw420: 'SW-420 switch', pir: 'PIR motion', flame: 'Flame sensor', sos: 'SOS button' };
 // Honest interpretation notes; raw values are never restated as calibrated
 // measurements or safety conclusions the sensors cannot support.

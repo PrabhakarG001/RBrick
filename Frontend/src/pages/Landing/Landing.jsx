@@ -457,7 +457,7 @@ export default function Landing() {
             
             <div className="relative z-10 h-full flex flex-col justify-between p-8 sm:p-10 md:p-12 w-full">
               <div className="text-center mt-6 w-full px-2 max-w-md mx-auto">
-                <h3 className="text-3xl font-bold text-white mb-4 leading-tight text-center tracking-tight">ResillioX Smart Monitoring</h3>
+                <h3 className="text-3xl font-bold text-white mb-4 leading-tight text-center tracking-tight">RBrick Smart Monitoring</h3>
                 <p className="text-white/80 text-base sm:text-lg max-w-md mx-auto min-h-[56px] flex items-center justify-center text-center leading-relaxed px-2">
                   Connected sensors monitor building conditions, detect potential hazards, and communicate safety events through a centralized dashboard.
                 </p>
@@ -488,7 +488,7 @@ export default function Landing() {
       <section id="how-it-works" className="bg-secondary/50 py-24 border-y border-border overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">How ResillioX Works</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">How RBrick Works</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">From sensor readings to configured safety checks and dashboard monitoring.</p>
           </motion.div>
           
@@ -530,7 +530,7 @@ export default function Landing() {
       <section className="px-6 md:px-12 py-24 max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-4">Real-Time Safety Monitoring Engine</h2>
-          <p className="text-muted-foreground">Simulated demo: watch ResillioX process example telemetry and illustrate building safety checks.</p>
+          <p className="text-muted-foreground">Simulated demo: watch RBrick process example telemetry and illustrate building safety checks.</p>
         </motion.div>
         
         <div className="bg-[#030213] border border-white/10 rounded-xl overflow-hidden shadow-2xl font-mono relative">
@@ -541,7 +541,7 @@ export default function Landing() {
               <div className="w-3 h-3 rounded-full bg-green-500"></div>
             </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-xs text-slate-400 font-semibold tracking-wide">ResillioX-iot-engine</div>
+              <div className="text-xs text-slate-400 font-semibold tracking-wide">RBrick-iot-engine</div>
             </div>
           </div>
           <div className="p-6 text-sm text-gray-300 h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -600,7 +600,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6 }} className="max-w-4xl mx-auto text-center mt-12 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-8 md:p-12">
             <h3 className="text-2xl md:text-3xl font-semibold text-white mb-6 tracking-tight">Complete Visibility Into Every Safety Event</h3>
             <p className="text-white/90 text-base md:text-xl leading-relaxed text-center px-4">
-              When configured for gas, smoke, temperature, humidity, water leaks, and door activity, ResillioX connects sensor data to rules that flag potential building hazards. Sensor readings appear on a centralized dashboard, while safety events are stored for review, helping users understand sensor conditions and investigate recorded alerts.
+              When configured for gas, smoke, temperature, humidity, water leaks, and door activity, RBrick connects sensor data to rules that flag potential building hazards. Sensor readings appear on a centralized dashboard, while safety events are stored for review, helping users understand sensor conditions and investigate recorded alerts.
             </p>
           </motion.div>
         </div>
@@ -808,10 +808,10 @@ export default function Landing() {
           
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative">
             <div className="text-white/60 text-sm">
-              © 2026 ResillioX. All rights reserved.
+              © 2026 RBrick. All rights reserved.
             </div>
             <div className="text-white/60 text-sm md:text-center md:absolute md:left-1/2 md:-translate-x-1/2">
-              Developed and designed by the ResillioX team.
+              Developed and designed by the RBrick team.
             </div>
             <div className="flex items-center gap-3">
               <LanguageSelector variant="dark" direction="up" />

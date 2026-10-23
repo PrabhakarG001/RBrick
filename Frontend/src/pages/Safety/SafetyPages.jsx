@@ -192,7 +192,7 @@ function Trend({ analytics, fields }) {
 
 function SensorCards({ reading }) {
   const s = useSafety();
-  const isV1 = s.meta?.payloadFormat === 'resilliox-v1';
+  const isV1 = ['rbrick-v1', 'resilliox-v1'].includes(s.meta?.payloadFormat);
   const stored = reading;
   const live = stored ? s.live?.readings?.[stored.deviceId] : null;
   const merged = isV1 ? mergeReading(stored, live) : stored;
@@ -248,7 +248,7 @@ const riskTone = value => ({ NORMAL: '#16a34a', LOW: '#65a30d', MODERATE: '#d977
 
 function RiskPanel({ deviceId }) {
   const s = useSafety();
-  if (s.meta?.payloadFormat !== 'resilliox-v1') return null;
+  if (!['rbrick-v1', 'resilliox-v1'].includes(s.meta?.payloadFormat)) return null;
   const liveRisk = deviceId ? s.live?.risks?.[deviceId] : null;
   const storedRisk = (s.data?.summary?.risk || []).find(r => r.deviceId === deviceId) || null;
   const reading = latestReadings(s.data?.summary?.latest, s.live?.readings).find(r => r.deviceId === deviceId);
@@ -612,12 +612,12 @@ export function OverviewPage() {
       {simulated && <p className="safety-sim-badge" role="note">Some readings on this page are simulated test data (source=simulation), not physical hardware measurements.</p>}
       
       <div className="dashboard-hero">
-        <img src="/assets/dashboard_hero.jpg" alt="ResillioX dashboard background" className="dashboard-cls-3" />
+        <img src="/assets/dashboard_hero.jpg" alt="RBrick dashboard background" className="dashboard-cls-3" />
         <div className="dashboard-cls-4" />
         <div className="dashboard-hero-content">
           <h2 className="dashboard-hero-title">Smarter Building Safety Starts Here</h2>
           <p className="dashboard-hero-text">
-            Monitor building conditions in real time, detect potential safety hazards, and track security incidents with ResillioX. Stay informed about sensor activity, emergency alerts, and maintenance needs from one centralized dashboard.
+            Monitor building conditions in real time, detect potential safety hazards, and track security incidents with RBrick. Stay informed about sensor activity, emergency alerts, and maintenance needs from one centralized dashboard.
           </p>
           <div className="dashboard-cls-5">
             <Link to="/monitoring" className="db-hero-btn">View Telemetry</Link>
@@ -706,7 +706,7 @@ export function OverviewPage() {
 function heroReadingIsSimulated(reading) { return reading?.source === 'simulation'; }
 
 function trendFields(s) {
-  if (s.meta?.payloadFormat === 'resilliox-v1') return (s.meta?.v1Sensors || []).filter(item => item.kind === 'number').map(item => item.name);
+  if (['rbrick-v1', 'resilliox-v1'].includes(s.meta?.payloadFormat)) return (s.meta?.v1Sensors || []).filter(item => item.kind === 'number').map(item => item.name);
   return Object.keys(s.meta?.fields || {}).filter(k => s.meta.fields[k] === 'number');
 }
 
@@ -897,7 +897,7 @@ export function IncidentsPage() {
                 ))}
               </select>
             </label>
-            <button className="db-tab" disabled={!incidents.result} onClick={() => downloadReport('resilliox-safety-incidents.json', { project: 'ResillioX', generatedAt: new Date().toISOString(), source: 'Stored backend incidents', coverage: 'Current filtered page', filters: filter, totalMatching: incidents.total, page: incidents.result.page, incidents: incidents.items })}>
+            <button className="db-tab" disabled={!incidents.result} onClick={() => downloadReport('rbrick-safety-incidents.json', { project: 'RBrick', generatedAt: new Date().toISOString(), source: 'Stored backend incidents', coverage: 'Current filtered page', filters: filter, totalMatching: incidents.total, page: incidents.result.page, incidents: incidents.items })}>
               Export Safety Report
             </button>
           </div>
@@ -1725,8 +1725,8 @@ export function AnalyticsPage() {
         <button 
           className="db-tab db-tab--active" 
           disabled={!analytics} 
-          onClick={() => downloadReport('resilliox-building-safety-analytics.json', { 
-            project: 'ResillioX', 
+          onClick={() => downloadReport('rbrick-building-safety-analytics.json', {
+            project: 'RBrick',
             generatedAt: new Date().toISOString(), 
             device: device || 'All', 
             analytics, 

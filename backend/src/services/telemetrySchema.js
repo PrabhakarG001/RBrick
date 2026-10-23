@@ -1,4 +1,4 @@
-// resilliox-v1 nested payload validation (schema_version 1.0).
+// rbrick-v1 nested payload validation (schema_version 1.0).
 //
 // One schema shared by firmware, the Python simulator, the backend and the
 // risk engine. Examples: IoT/README.md. Topic contract: mqtt/README.md.

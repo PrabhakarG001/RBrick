@@ -1,0 +1,78 @@
+{
+  "source_text_files_scanned": 214,
+  "remaining_compatibility_references": [
+    {
+      "path": ".env.example",
+      "references": 1
+    },
+    {
+      "path": "backend/src/app.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/config/settings.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/middleware/auth.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/routes/authRoutes.js",
+      "references": 5
+    },
+    {
+      "path": "backend/src/routes/systemRoutes.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/routes/userRoutes.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/services/emergencyService.js",
+      "references": 3
+    },
+    {
+      "path": "backend/test/rebranding.test.js",
+      "references": 1
+    },
+    {
+      "path": "docker-compose.yml",
+      "references": 1
+    },
+    {
+      "path": "Frontend/src/pages/Safety/SafetyPages.jsx",
+      "references": 3
+    },
+    {
+      "path": "Frontend/src/services/brandStorage.js",
+      "references": 3
+    },
+    {
+      "path": "Frontend/test/brandStorage.test.js",
+      "references": 5
+    }
+  ],
+  "private_files_with_legacy_identifiers": [
+    {
+      "path": ".env",
+      "references": 1
+    }
+  ],
+  "excluded": [
+    ".git",
+    "node_modules",
+    ".docker-validation",
+    ".venv",
+    ".venv-iot",
+    "venv",
+    "dist",
+    "build",
+    "__pycache__",
+    ".pytest_cache",
+    ".secrets",
+    ".pio",
+    "coverage"
+  ]
+}

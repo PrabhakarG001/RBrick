@@ -100,7 +100,7 @@ async function main() {
     const dbpath = path.join(dir,'mongo');
     await mkdir(dbpath);
     const mongod = process.env.INTEGRATION_MONGOD || 'C:/Program Files/MongoDB/Server/8.2/bin/mongod.exe';
-    const mongo = start(mongod, ['--replSet','resilliox_test','--port',String(mongoPort),
+    const mongo = start(mongod, ['--replSet','rbrick_test','--port',String(mongoPort),
       '--bind_ip','127.0.0.1','--dbpath',dbpath,'--logpath',path.join(dir,'mongo.log')]);
     let error;
     mongo.once('error', value => { error = value; });
@@ -114,7 +114,7 @@ async function main() {
         try { await admin.connect(); ready = true; break; } catch { await pause(200); }
       }
       assert(ready, 'MongoDB startup timed out');
-      await admin.db('admin').command({ replSetInitiate: { _id: 'resilliox_test',
+      await admin.db('admin').command({ replSetInitiate: { _id: 'rbrick_test',
         members: [{ _id: 0, host: `127.0.0.1:${mongoPort}` }] } });
       ready = false;
       for (let attempt = 0; attempt < 100; ++attempt) {
@@ -123,7 +123,7 @@ async function main() {
       }
       assert(ready, 'MongoDB replica set primary not ready');
     } finally { await admin.close(); }
-    env.PIPELINE_TEST_URI = `mongodb://127.0.0.1:${mongoPort}/?replicaSet=resilliox_test`;
+    env.PIPELINE_TEST_URI = `mongodb://127.0.0.1:${mongoPort}/?replicaSet=rbrick_test`;
     // Keep unrelated camera/dashboard database suites gated. This batch runs
     // its real database coverage through the Phase 6 pipeline test below.
     env.PIPELINE_TEST_MQTT_URL = env.MQTT_V1_TEST_URL;
@@ -131,7 +131,7 @@ async function main() {
     if(phase>=8)env.DASHBOARD_TEST_URI=env.PIPELINE_TEST_URI;
     if(phase>=10){
       env.INTEGRATION_PYTHON=process.env.INTEGRATION_PYTHON || path.join(root,'.docker-validation/python-venv/Scripts/python.exe');
-      env.RESTART_TEST_DB=`resilliox_ui_test_${randomUUID().replaceAll('-','')}`;
+      env.RESTART_TEST_DB=`rbrick_ui_test_${randomUUID().replaceAll('-','')}`;
     }
     // Native broker tests share the ACL's simulator ID; run files sequentially.
     if (phase === 6) await run(process.execPath, ['--test','--test-concurrency=1','backend/test/*.test.js'], env);
@@ -156,7 +156,7 @@ async function main() {
         const owned=children.filter(child=>child.pid && child.exitCode===null && child.signalCode===null);
         await Promise.all(owned.map(child=>new Promise(resolve=>{child.once('close',resolve);child.kill('SIGKILL');})));
         for(const [exe,args] of [
-          [mongod,['--replSet','resilliox_test','--port',String(mongoPort),'--bind_ip','127.0.0.1','--dbpath',dbpath,'--logpath',path.join(dir,'mongo.log'),'--logappend']],
+          [mongod,['--replSet','rbrick_test','--port',String(mongoPort),'--bind_ip','127.0.0.1','--dbpath',dbpath,'--logpath',path.join(dir,'mongo.log'),'--logappend']],
           [path.join(bin,'mosquitto.exe'),['-c',config]],
           [env.INTEGRATION_PYTHON,['-m','uvicorn','ai_ml.main:app','--host','127.0.0.1','--port',String(aiPort)]],
         ]){const child=start(exe,args,{...process.env,RISK_THRESHOLDS_JSON:'{}',AI_SERVICE_TOKEN:''});child.stdout.resume();child.stderr.resume();}

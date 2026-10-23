@@ -17,6 +17,7 @@ services:
       start_period: 15s
       retries: 3
   frontend:
+    image: rbrick-frontend:local
     build:
       context: ./Frontend
     ports:
@@ -35,6 +36,7 @@ services:
       start_period: 10s
       retries: 3
   backend:
+    image: rbrick-backend:local
     build:
       context: ./backend
     # Mosquitto may still be starting; the backend retries MQTT with backoff.
@@ -52,9 +54,9 @@ services:
       MQTT_PASSWORD: "${MQTT_PASSWORD:-}"
       MQTT_CLIENT_ID: "${MQTT_CLIENT_ID:-resiliox-backend-subscriber}"
       MQTT_TOPIC: "${MQTT_TOPIC:-}"
-      # resilliox-v1 = nested schema from IoT firmware/simulator (default).
+      # rbrick-v1 = nested schema from IoT firmware/simulator (default).
       # flat = legacy env-configured flat contract below.
-      MQTT_PAYLOAD_FORMAT: "${MQTT_PAYLOAD_FORMAT:-resilliox-v1}"
+      MQTT_PAYLOAD_FORMAT: "${MQTT_PAYLOAD_FORMAT:-rbrick-v1}"
       DEVICE_ID_FIELD: "${DEVICE_ID_FIELD:-deviceId}"
       EVENT_ID_FIELD: "${EVENT_ID_FIELD:-eventId}"
       TIMESTAMP_FIELD: "${TIMESTAMP_FIELD:-timestamp}"
@@ -90,6 +92,7 @@ services:
       retries: 3
 
   ai_ml:
+    image: rbrick-ai-ml:local
     build:
       context: ./ai_ml
     environment:

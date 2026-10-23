@@ -10,9 +10,9 @@ import { createPayloadParser } from '../src/services/payload.js';
 import { storeReading } from '../src/services/ingest.js';
 
 test('dashboard APIs persist device, incident and maintenance workflows against isolated MongoDB', { skip: !process.env.DASHBOARD_TEST_URI }, async t => {
-  const dbName = `resilliox_dashboard_test_${randomUUID().replaceAll('-', '')}`;
+  const dbName = `rbrick_dashboard_test_${randomUUID().replaceAll('-', '')}`;
   await mongoose.connect(process.env.DASHBOARD_TEST_URI, { dbName, serverSelectionTimeoutMS: 5000 });
-  t.after(async () => { assert(mongoose.connection.name.startsWith('resilliox_dashboard_test_')); await mongoose.connection.dropDatabase(); await mongoose.disconnect(); });
+  t.after(async () => { assert(mongoose.connection.name.startsWith('rbrick_dashboard_test_')); await mongoose.connection.dropDatabase(); await mongoose.disconnect(); });
   await ensureIndexes();
   const config = settings({ IOT_API_TOKEN: 'dashboard-test-token-'.repeat(3),
     SENSOR_FIELDS_JSON: JSON.stringify({ temperature: 'number', humidity: 'number', gas: 'number', leak: 'boolean', door: 'boolean', sos: 'boolean' }),

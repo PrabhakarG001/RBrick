@@ -1,0 +1,269 @@
+{
+  "files": [
+    {
+      "path": ".env.example",
+      "references": 3
+    },
+    {
+      "path": "ai_ml/config/model_config.example.yaml",
+      "references": 1
+    },
+    {
+      "path": "ai_ml/datasets/README.md",
+      "references": 1
+    },
+    {
+      "path": "ai_ml/main.py",
+      "references": 1
+    },
+    {
+      "path": "ai_ml/models/README.md",
+      "references": 1
+    },
+    {
+      "path": "ai_ml/README.md",
+      "references": 2
+    },
+    {
+      "path": "ai_ml/schemas/__init__.py",
+      "references": 1
+    },
+    {
+      "path": "ai_ml/__init__.py",
+      "references": 1
+    },
+    {
+      "path": "backend/.env.example",
+      "references": 2
+    },
+    {
+      "path": "backend/package-lock.json",
+      "references": 3
+    },
+    {
+      "path": "backend/package.json",
+      "references": 1
+    },
+    {
+      "path": "backend/scripts/verify-dashboard.js",
+      "references": 2
+    },
+    {
+      "path": "backend/scripts/verify-integration.js",
+      "references": 5
+    },
+    {
+      "path": "backend/src/app.js",
+      "references": 2
+    },
+    {
+      "path": "backend/src/config/settings.js",
+      "references": 4
+    },
+    {
+      "path": "backend/src/middleware/auth.js",
+      "references": 2
+    },
+    {
+      "path": "backend/src/models/index.js",
+      "references": 3
+    },
+    {
+      "path": "backend/src/models/user.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/routes/authRoutes.js",
+      "references": 9
+    },
+    {
+      "path": "backend/src/routes/systemRoutes.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/routes/userRoutes.js",
+      "references": 3
+    },
+    {
+      "path": "backend/src/server.js",
+      "references": 2
+    },
+    {
+      "path": "backend/src/services/emergencyService.js",
+      "references": 3
+    },
+    {
+      "path": "backend/src/services/ingestV1.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/services/mqttServiceV1.js",
+      "references": 1
+    },
+    {
+      "path": "backend/src/services/telemetrySchema.js",
+      "references": 1
+    },
+    {
+      "path": "backend/test/camera.test.js",
+      "references": 2
+    },
+    {
+      "path": "backend/test/dashboard.test.js",
+      "references": 2
+    },
+    {
+      "path": "backend/test/deployment.test.js",
+      "references": 1
+    },
+    {
+      "path": "backend/test/maintenance.test.js",
+      "references": 1
+    },
+    {
+      "path": "backend/test/pipeline.test.js",
+      "references": 3
+    },
+    {
+      "path": "backend/test/security.test.js",
+      "references": 1
+    },
+    {
+      "path": "deployment/Initialize-Local.ps1",
+      "references": 2
+    },
+    {
+      "path": "deployment/mongo/Dockerfile",
+      "references": 5
+    },
+    {
+      "path": "deployment/mongo/entrypoint.sh",
+      "references": 2
+    },
+    {
+      "path": "deployment/mongo/init-app.js",
+      "references": 1
+    },
+    {
+      "path": "docker-compose.local.yml",
+      "references": 1
+    },
+    {
+      "path": "docker-compose.yml",
+      "references": 3
+    },
+    {
+      "path": "DOCKER.md",
+      "references": 1
+    },
+    {
+      "path": "Frontend/index.html",
+      "references": 2
+    },
+    {
+      "path": "Frontend/package-lock.json",
+      "references": 2
+    },
+    {
+      "path": "Frontend/package.json",
+      "references": 1
+    },
+    {
+      "path": "Frontend/README.md",
+      "references": 7
+    },
+    {
+      "path": "Frontend/src/components/CardNav/CardNav.css",
+      "references": 1
+    },
+    {
+      "path": "Frontend/src/components/Logo/Logo.jsx",
+      "references": 2
+    },
+    {
+      "path": "Frontend/src/context/AuthContext.jsx",
+      "references": 12
+    },
+    {
+      "path": "Frontend/src/context/LanguageContext.jsx",
+      "references": 5
+    },
+    {
+      "path": "Frontend/src/pages/Help/Help.jsx",
+      "references": 2
+    },
+    {
+      "path": "Frontend/src/pages/Landing/Landing.jsx",
+      "references": 7
+    },
+    {
+      "path": "Frontend/src/pages/Login/Login.jsx",
+      "references": 3
+    },
+    {
+      "path": "Frontend/src/pages/Profile/Profile.jsx",
+      "references": 1
+    },
+    {
+      "path": "Frontend/src/pages/Safety/safetyData.js",
+      "references": 1
+    },
+    {
+      "path": "Frontend/src/pages/Safety/SafetyPages.jsx",
+      "references": 9
+    },
+    {
+      "path": "Frontend/src/services/api.js",
+      "references": 2
+    },
+    {
+      "path": "IoT/firmware/esp32_main/esp32_main.ino",
+      "references": 1
+    },
+    {
+      "path": "IoT/firmware/esp32_main/SafetySignals.h",
+      "references": 2
+    },
+    {
+      "path": "IoT/README.md",
+      "references": 2
+    },
+    {
+      "path": "IoT/simulator/publish_test_data.py",
+      "references": 7
+    },
+    {
+      "path": "IoT/simulator/README.md",
+      "references": 2
+    },
+    {
+      "path": "mqtt/mosquitto.conf",
+      "references": 1
+    },
+    {
+      "path": "mqtt/README.md",
+      "references": 2
+    },
+    {
+      "path": "package.json",
+      "references": 1
+    },
+    {
+      "path": "README.md",
+      "references": 1
+    }
+  ],
+  "path_renames": [],
+  "private_files_preserved": [
+    ".env"
+  ],
+  "references_found": 158,
+  "policy": {
+    "display": "RBrick",
+    "packages": "rbrick",
+    "camelCase": "rBrick",
+    "environmentPrefix": "RBRICK_",
+    "compatibility": "Preserve stored database selection, users, passwords, signing secret, actuator topics and client identity; accept legacy payload format and migrate browser storage.",
+    "paths": "No source files or folders contain old names. Rename internal Mongo image paths together."
+  }
+}

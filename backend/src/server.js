@@ -19,7 +19,7 @@ try { config = settings(); } catch {
 const status = { database: false, mqtt: false, persisted: 0, rejected: 0, persistenceFailures: 0, socketClients: 0 };
 const emergencyService = new EmergencyService(status);
 const aiService = createAiServiceClient(config, status);
-const requiresAi = config.mqttEnabled && config.payloadFormat === 'resilliox-v1';
+const requiresAi = config.mqttEnabled && config.payloadFormat === 'rbrick-v1';
 if (requiresAi) await aiService.healthcheck();
 const aiTimer = requiresAi ? setInterval(() => aiService.healthcheck(), 30000).unref() : null;
 let mqttClient;
@@ -50,7 +50,7 @@ async function establishDatabase() {
       lastDatabaseFailure = undefined;
       console.log('Atlas connected and indexes ready');
       if (!mqttClient) {
-        mqttClient = config.payloadFormat === 'resilliox-v1'
+        mqttClient = config.payloadFormat === 'rbrick-v1'
           ? startMqttV1(config, status, { broadcast: realtime.broadcast, predict: aiService.predict,storeTelemetry:storeSecurityAwareTelemetry,recordState:recordSecurityAwareState })
           : startMqtt(config, status);
       }
