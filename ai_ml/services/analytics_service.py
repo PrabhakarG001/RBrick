@@ -1,8 +1,5 @@
 from typing import List, Dict, Any
-from ..preprocessing.validation import validate_telemetry_ranges
-from ..preprocessing.feature_builder import build_features
 from ..analytics.statistics import compute_series_stats
-from ..analytics.trends import analyze_trend
 from ..inference.model_loader import ModelLoader
 from ..inference.anomaly_detector import StatisticalAnomalyDetector
 

@@ -31,11 +31,20 @@ datasets/raw/*
 datasets/processed/*
 !datasets/processed/.gitkeep
 *.csv
+# Canonical user-supplied dataset is tracked, never regenerated (Phase 2).
+!data/iot_sensor_data.csv
 *.parquet
 *.jsonl
 *.h5
 *.zip
 *.tar.gz
+
+# Temporary isolated dependencies used for asset verification.
+.verification-deps/
+.verification-runtime/
+.verification-runner.mjs
+# Preserve the verified existing classifier in clean checkouts.
+!models/trained/iot_sensor_model.joblib
 
 # Local Environment Variables & Secrets
 .env

@@ -1,8 +1,9 @@
 # RBrick Python risk service
 
 Python/FastAPI/Uvicorn performs risk inference; Express handles MQTT validation,
-storage and realtime delivery. There is no trained model. `python-rules-v1`
-is a configurable demonstration rules engine, version `1.0.0`.
+storage and realtime delivery. The live `/predict` endpoint uses `python-rules-v1`,
+a configurable demonstration rules engine, version `1.0.0`. The existing trained
+Random Forest classifier is preserved separately; see the asset verification section below.
 
 From the repository root (Windows, with Python 3.13 available):
 
@@ -58,7 +59,7 @@ alone does not establish intrusion. Stale/future-skewed readings keep historical
 explanations but produce no fresh live incidents. All-missing data is a fault,
 not a healthy NORMAL result. Source labels remain unchanged throughout.
 
-The predictor protocol in inference.py is the extension point for a future
+The predictor protocol in inference/__init__.py is the extension point for a future
 trained model. Rule configuration validates ordered thresholds/bands and bounded
 weights. Defaults retain the earlier rule thresholds, with explicit humidity
 band monitoring (20-80%) and actionable threshold incidents. Python is stateless;
@@ -143,7 +144,50 @@ Phase 6 runner; this is not physical hardware or cloud-deployment verification.
 
 The React frontend is untouched. Future UI work may surface the new unavailable
 analysis state more prominently; this batch does not add a re-analysis worker,
-trained model, camera firmware or any Phase 7+ feature.
+newly trained model, camera firmware or any Phase 7+ feature.
 
 Primary references: [FastAPI testing](https://fastapi.tiangolo.com/tutorial/testing/)
 and [Pydantic strict mode](https://docs.pydantic.dev/latest/concepts/strict_mode/).
+
+## Preserved classifier and dataset
+
+The original dataset is `data/iot_sensor_data.csv`: 1,250 rows, seven ordered
+numeric/binary features and the `event_label` target. It is the supplied demonstration
+dataset; the original training source describes synthetic examples rather than
+measured/calibrated building data. No rows or bytes were changed during cleanup.
+
+The existing `models/trained/iot_sensor_model.joblib` is a 100-tree scikit-learn
+RandomForestClassifier restored unchanged from the same repository
+(commit `4a7a2d7`, original root file `iot_sensor_model.joblib`). Its checksum
+and provenance are in `models/model_manifest.json`. No scaler/encoder is required
+by the original workflow. `lesson1_ml.py` verifies the artifact checksum before
+deserializing and checks the estimator feature order against the CSV schema.
+Arbitrary model files are never reported as loaded merely because they exist.
+
+Install the optional classifier dependencies alongside the service dependencies
+into your chosen environment, then verify from the repository root:
+
+```powershell
+python -m pip install -r ai_ml/requirements.lock.txt -r ai_ml/requirements-ml.lock.txt
+python -m ai_ml.verify_assets
+python -m pytest ai_ml/tests -q -p no:cacheprovider
+```
+
+The lightweight service Docker image keeps its existing rules-only dependency
+set. Classifier use requires the optional dependencies; absence is reported
+without fabricated predictions. Verification never runs the preserved original
+training script, regenerates data, or saves new model weights.
+
+The seven classifier inputs in exact order are `temperature_c`, `humidity_pct`,
+`accel_magnitude_g`, `sw420_vibration`, `mq2_raw`, `motion_detected`, `flame_detected`.
+SOS remains outside the classifier. Live firmware supplies dynamic `vibration_rms`
+rather than acceleration magnitude, and a 12-bit MQ-2 scale rather than the
+illustrative 0?1023 training scale. These quantities cannot be silently equated.
+Classifier labels/probabilities also differ from the backend risk-score contract.
+The existing `/predict`, persistence, APIs and Socket.IO flow therefore retain
+their verified rules behavior; a trained-classifier-to-live-sensor integration
+requires an explicit feature/unit mapping and output contract. `/health` continues
+to report `trained_model: false` for its active rules engine.
+
+See [CLEANUP_REPORT.md](CLEANUP_REPORT.md), [cleanup-inventory.json](cleanup-inventory.json)
+and [asset-verification.json](asset-verification.json) for the audit and test evidence.

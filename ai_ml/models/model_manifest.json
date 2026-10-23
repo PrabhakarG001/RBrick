@@ -1,0 +1,14 @@
+{
+  "filename": "iot_sensor_model.joblib",
+  "sha256": "f1525f9a254ab2780af4cda1b66843e4893757874b1b007e055361cf9d022945",
+  "git_blob": "9eaa44763c97af1ff4796c27623706c5a84d0d9e",
+  "source_repository": "PrabhakarG001/RBrick",
+  "source_commit": "4a7a2d78d64abd5652ed82670f7af8470bc8b7fb",
+  "source_path": "iot_sensor_model.joblib",
+  "estimator": "sklearn.ensemble.RandomForestClassifier",
+  "sklearn_version": "1.9.1",
+  "feature_names": ["temperature_c", "humidity_pct", "accel_magnitude_g", "sw420_vibration", "mq2_raw", "motion_detected", "flame_detected"],
+  "target": "event_label",
+  "preprocessing": "No separate fitted transformer is used by the original training script.",
+  "training_policy": "Do not retrain or regenerate data automatically."
+}

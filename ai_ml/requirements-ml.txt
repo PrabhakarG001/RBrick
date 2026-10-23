@@ -1,0 +1,5 @@
+# Optional classifier workflow; the live /predict rules service uses requirements.txt.
+# The existing artifact was serialized with scikit-learn 1.9.1.
+scikit-learn==1.9.1
+joblib>=1.5,<2
+pandas>=3,<4

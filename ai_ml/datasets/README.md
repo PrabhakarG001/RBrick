@@ -1,12 +1,16 @@
-# RBrick Dataset Workspace
+﻿# Dataset directories
 
-This folder is dedicated to housing datasets for the Building Safety, Security, and Maintenance Monitoring System.
+The actual existing classifier dataset is `../data/iot_sensor_data.csv`.
+Its seven features and `event_label` target are documented in the main README
+and checked by `python -m ai_ml.verify_assets`. No data is generated during verification.
 
-## Directory Structure:
-- `raw/`: Place raw uncleaned sensor logs, MQTT captures, and incident data here (.csv, .json, .parquet).
-- `processed/`: Output directory for cleaned, normalized, time-aligned feature datasets.
-- `samples/`: Verified sample benchmark datasets for regression testing and smoke validation.
+These optional staging directories are retained because backend model-status
+metadata and frontend documentation reference them:
 
-## Expected Schemas:
-Raw sensor data should contain at minimum:
-`timestamp`, `device_id`, `temperature`, `humidity`, `gas`, `flame`, `water_leak`, `vibration_rms`, `sos`.
+- `raw/`: future sensor logs or imported datasets.
+- `processed/`: future explicit preprocessing outputs.
+- `samples/`: fixture documentation.
+
+They are not the source of the current classifier dataset. Live firmware telemetry
+uses the validated API schema in `schemas/__init__.py`; its units/features are
+not interchangeable with the lesson classifier schema.

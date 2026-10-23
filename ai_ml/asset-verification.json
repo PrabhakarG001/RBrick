@@ -1,0 +1,135 @@
+{
+  "dataset": {
+    "path": "ai_ml\\data\\iot_sensor_data.csv",
+    "rows": 1250,
+    "columns": 8,
+    "feature_names": [
+      "temperature_c",
+      "humidity_pct",
+      "accel_magnitude_g",
+      "sw420_vibration",
+      "mq2_raw",
+      "motion_detected",
+      "flame_detected"
+    ],
+    "target": "event_label",
+    "labels": {
+      "VIBRATION_EVENT": 250,
+      "MOTION_EVENT": 250,
+      "GAS_SMOKE_EVENT": 250,
+      "FIRE_SUSPECTED": 250,
+      "NORMAL": 250
+    },
+    "missing_rows": 0,
+    "sha256": "f7d436bd76d08b565bcb4b7a435f07c6e88df2880acc3a6cb07dbfef1f344d58",
+    "ranges": {
+      "temperature_c": [
+        15.3,
+        89.9
+      ],
+      "humidity_pct": [
+        15.0,
+        68.8
+      ],
+      "accel_magnitude_g": [
+        0.87,
+        4.18
+      ],
+      "sw420_vibration": [
+        0.0,
+        1.0
+      ],
+      "mq2_raw": [
+        121.0,
+        948.0
+      ],
+      "motion_detected": [
+        0.0,
+        1.0
+      ],
+      "flame_detected": [
+        0.0,
+        1.0
+      ]
+    },
+    "errors": [],
+    "status": "VERIFIED"
+  },
+  "model": {
+    "path": "ai_ml\\models\\trained\\iot_sensor_model.joblib",
+    "status": "VERIFIED",
+    "reason": null,
+    "type": "RandomForestClassifier",
+    "samples": [
+      {
+        "dataset_label": "FIRE_SUSPECTED",
+        "status": "OK",
+        "prediction": "FIRE_SUSPECTED",
+        "probabilities": {
+          "FIRE_SUSPECTED": 1.0,
+          "GAS_SMOKE_EVENT": 0.0,
+          "MOTION_EVENT": 0.0,
+          "NORMAL": 0.0,
+          "VIBRATION_EVENT": 0.0
+        }
+      },
+      {
+        "dataset_label": "GAS_SMOKE_EVENT",
+        "status": "OK",
+        "prediction": "GAS_SMOKE_EVENT",
+        "probabilities": {
+          "FIRE_SUSPECTED": 0.0,
+          "GAS_SMOKE_EVENT": 1.0,
+          "MOTION_EVENT": 0.0,
+          "NORMAL": 0.0,
+          "VIBRATION_EVENT": 0.0
+        }
+      },
+      {
+        "dataset_label": "MOTION_EVENT",
+        "status": "OK",
+        "prediction": "MOTION_EVENT",
+        "probabilities": {
+          "FIRE_SUSPECTED": 0.0,
+          "GAS_SMOKE_EVENT": 0.0,
+          "MOTION_EVENT": 0.99,
+          "NORMAL": 0.01,
+          "VIBRATION_EVENT": 0.0
+        }
+      },
+      {
+        "dataset_label": "NORMAL",
+        "status": "OK",
+        "prediction": "NORMAL",
+        "probabilities": {
+          "FIRE_SUSPECTED": 0.0,
+          "GAS_SMOKE_EVENT": 0.0,
+          "MOTION_EVENT": 0.02,
+          "NORMAL": 0.98,
+          "VIBRATION_EVENT": 0.0
+        }
+      },
+      {
+        "dataset_label": "VIBRATION_EVENT",
+        "status": "OK",
+        "prediction": "VIBRATION_EVENT",
+        "probabilities": {
+          "FIRE_SUSPECTED": 0.0,
+          "GAS_SMOKE_EVENT": 0.03,
+          "MOTION_EVENT": 0.0,
+          "NORMAL": 0.0,
+          "VIBRATION_EVENT": 0.97
+        }
+      }
+    ],
+    "dependency_versions": {
+      "scikit-learn": "1.9.1",
+      "joblib": "1.6.0",
+      "numpy": "2.5.4",
+      "pandas": "3.1.0",
+      "scipy": "1.18.1"
+    },
+    "sha256": "f1525f9a254ab2780af4cda1b66843e4893757874b1b007e055361cf9d022945",
+    "feature_order_matches": true
+  }
+}

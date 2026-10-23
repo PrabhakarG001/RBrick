@@ -1,47 +1,42 @@
-import os
-from typing import Optional, Dict, Any
-from .model_interface import BaseModelInterface
+﻿from pathlib import Path
+from typing import Any, Dict
+from .. import lesson1_ml
+
 
 class ModelLoader:
-    """
-    Manages discovery and loading of future custom trained models.
-    Operates safely in statistical fallback mode if model files are absent.
-    """
+    """Report actual verified loads; an arbitrary weight file is not a model."""
 
-    def __init__(self, models_dir: str = "models/trained"):
-        self.models_dir = models_dir
-        self.loaded_model: Optional[BaseModelInterface] = None
-        self.model_metadata: Dict[str, Any] = {
+    def __init__(self, models_dir: str | Path | None = None):
+        self.models_dir = Path(models_dir) if models_dir is not None else lesson1_ml.MODEL_PATHS[0].parent
+        self.loaded_model = None
+        self.model_metadata: Dict[str, Any] = {}
+
+    def discover_and_load(self) -> Dict[str, Any]:
+        self.loaded_model = None
+        self.model_metadata = {
             "loaded": False,
             "engine": "python-statistical-rules",
             "version": "1.0.0",
             "future_model_ready": True,
             "supported_frameworks": ["ONNX", "PyTorch", "Scikit-Learn"],
+            "status": "MODEL_NOT_AVAILABLE",
         }
-
-    def discover_and_load(self) -> Dict[str, Any]:
-        """
-        Scans models_dir for valid weights (.onnx, .pt, .pkl).
-        Returns current model status.
-        """
-        if not os.path.exists(self.models_dir):
+        weights = sorted(p for p in self.models_dir.glob("*")
+                         if p.is_file() and p.suffix.lower() in {".onnx", ".pt", ".pth", ".pkl", ".joblib", ".keras", ".h5"})
+        if not weights:
+            self.model_metadata["note"] = "No trained model weights found; using statistical rule engine."
             return self.model_metadata
-
-        files = os.listdir(self.models_dir)
-        weight_files = [f for f in files if f.endswith(('.onnx', '.pt', '.pth', '.pkl', '.joblib')) and not f.startswith('.')]
-
-        if weight_files:
-            # Custom model file discovered
-            target_file = weight_files[0]
-            self.model_metadata = {
-                "loaded": True,
-                "engine": "custom-trained-model",
-                "filename": target_file,
-                "version": "custom-v1",
-                "future_model_ready": True,
-            }
-        else:
-            self.model_metadata["loaded"] = False
-            self.model_metadata["note"] = "No trained model weights found in models/trained/; using statistical rule engine."
-
+        expected = lesson1_ml.MODEL_PATHS[0]
+        if self.models_dir.resolve() != expected.parent.resolve() or not expected.is_file():
+            self.model_metadata.update(status="MODEL_VERIFICATION_FAILED",
+                                       note="Unconfigured model artifacts were not deserialized.")
+            return self.model_metadata
+        state = lesson1_ml.load_model_bundle()
+        if not state["available"]:
+            self.model_metadata.update(status=state.get("status", "MODEL_VERIFICATION_FAILED"),
+                                       note=state.get("reason", "Model verification failed."))
+            return self.model_metadata
+        self.loaded_model = lesson1_ml._bundle_cache["model"]
+        self.model_metadata.update(loaded=True, engine="custom-trained-model", version="custom-v1",
+                                   filename=expected.name, status="VERIFIED")
         return self.model_metadata

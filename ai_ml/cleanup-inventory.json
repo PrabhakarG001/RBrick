@@ -1,0 +1,1020 @@
+{
+  "policy": "Delete only generated caches; preserve training sources, dataset, preprocessing, public exports and backend-referenced directories. No model retraining.",
+  "before": [
+    {
+      "path": "ai_ml/.dockerignore",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "55437bdc982101be727a062c5ac75535a5c73551a51d6ab7064653098b9323bc",
+      "referenced_by": [
+        "Implicit Git/Docker tooling convention"
+      ]
+    },
+    {
+      "path": "ai_ml/.env.example",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "cb30e05bbe31e66fccf9f986b2c6c91c5cee24fe0b5c2e6548feb7f67bbd06bb",
+      "referenced_by": [
+        ".gitignore",
+        "ai_ml/.dockerignore",
+        "backend/.dockerignore",
+        "DOCKER.md",
+        "Frontend/.dockerignore",
+        "rebranding-audit.json",
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/.gitignore",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "7a47580695de520472ab1b54c30020914b51024b21fbdc285a2c652affda8a04",
+      "referenced_by": [
+        "Implicit Git/Docker tooling convention"
+      ]
+    },
+    {
+      "path": "ai_ml/.pytest_cache/.gitignore",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/.pytest_cache/CACHEDIR.TAG",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/.pytest_cache/README.md",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/.pytest_cache/v/cache/lastfailed",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "787522ba6705c5d40d9c4bc176fb215829e2def7dd88e4781e2e0177a03732e6",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/.pytest_cache/v/cache/nodeids",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/analytics/risk_scoring.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "034aca043f05bca1c8f74016648d7fe719bdff3ba60b85fe76b937a01063c797",
+      "referenced_by": [
+        "ai_ml/analytics/__init__.py",
+        "ai_ml/tests/test_analytics.py"
+      ]
+    },
+    {
+      "path": "ai_ml/analytics/statistics.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "8f215e966e3258fd52fbf565ee57956d7b00ddbaf38995be8837fb97c90c67ce",
+      "referenced_by": [
+        "ai_ml/analytics/__init__.py",
+        "ai_ml/inference/anomaly_detector.py",
+        "ai_ml/services/analytics_service.py",
+        "ai_ml/tests/test_analytics.py"
+      ]
+    },
+    {
+      "path": "ai_ml/analytics/trends.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "dd2ce4c6a1ffde35e060c80a9b0ecf32b74401029598f865a905128089d5b688",
+      "referenced_by": [
+        "ai_ml/analytics/__init__.py",
+        "ai_ml/tests/test_analytics.py",
+        "backend/src/routes/analyticsRoutes.js",
+        "backend/src/routes/iotRoutes.js",
+        "backend/test/dashboard.test.js",
+        "Frontend/src/pages/Help/Help.jsx",
+        "Frontend/src/pages/Safety/SafetyPages.jsx"
+      ]
+    },
+    {
+      "path": "ai_ml/analytics/__init__.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "128d8fb67c401a0f4f25a0e8b40ccf094d75b37ba632763014cfe5ef17b651b8",
+      "referenced_by": [
+        "ai_ml/inference/anomaly_detector.py",
+        "ai_ml/main.py",
+        "ai_ml/services/analytics_service.py",
+        "ai_ml/services/__init__.py",
+        "ai_ml/tests/test_analytics.py",
+        "backend/src/app.js",
+        "backend/src/models/user.js",
+        "backend/src/routes/analyticsRoutes.js",
+        "backend/src/routes/dashboardRoutes.js",
+        "backend/src/routes/iotRoutes.js",
+        "backend/test/analyticsFull.test.js",
+        "backend/test/dashboard.test.js",
+        "backend/test/module6RBAC.test.js",
+        "Frontend/src/App.jsx",
+        "Frontend/src/components/layout/Sidebar/Sidebar.jsx",
+        "Frontend/src/pages/Analysis/Analysis.jsx",
+        "Frontend/src/pages/Analytics/Analytics.css",
+        "Frontend/src/pages/Safety/SafetyContext.jsx",
+        "Frontend/src/pages/Safety/SafetyPages.jsx",
+        "Frontend/src/services/api.js"
+      ]
+    },
+    {
+      "path": "ai_ml/analytics/__pycache__/risk_scoring.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "88c03500a5ffded2d071e6721638a3ebd25b9d06107bba342dcf5bf4f37aa488",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/analytics/__pycache__/statistics.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "487e21ed10a83c6f0cde9f65267483992650a9ee0fae572f0edcb72ef87a66f8",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/analytics/__pycache__/trends.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "b25ae76b43712a4bf5291cb21243639944b1bb289248470444d8ad0f885ead24",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/analytics/__pycache__/__init__.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "6d78a6b4e20d002fc71a73258d772943d43015ccb3f17ba0f5ad3eea40f20b6e",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/config/model_config.example.yaml",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "675624d5534005388e22faab1c0660328153faaca91b4a3d179281ddcba57098",
+      "referenced_by": [
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/data/iot_sensor_data.csv",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "f7d436bd76d08b565bcb4b7a435f07c6e88df2880acc3a6cb07dbfef1f344d58",
+      "referenced_by": [
+        "ai_ml/.gitignore",
+        "ai_ml/datasets/README.md",
+        "ai_ml/lesson1_ml.py",
+        "ai_ml/README.md"
+      ]
+    },
+    {
+      "path": "ai_ml/datasets/processed/.gitkeep",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "bf58e7c42dea1f88a8ea80e485e890403fce7c612076d68d4fb7f79175883b67",
+      "referenced_by": [
+        "ai_ml/.gitignore",
+        "Backend metadata/configuration references parent directory"
+      ]
+    },
+    {
+      "path": "ai_ml/datasets/raw/.gitkeep",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "81143580b1a5f92903b39e5949ab0825387a36228b449f04ca0356820a7faff1",
+      "referenced_by": [
+        "ai_ml/.gitignore",
+        "Backend metadata/configuration references parent directory"
+      ]
+    },
+    {
+      "path": "ai_ml/datasets/README.md",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "50fec367820dba04367b4261e5bfb8a244bf4df803890245ee500cb0747513b3",
+      "referenced_by": [
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/datasets/samples/README.md",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": false,
+      "sha256": "167491b312c280dcbd46293cf9fecee282114e44369c903ee50d52381facd0f2",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/Dockerfile",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "a94b2b2c250bf533016dca3d4e99a7b549da60f0581b603d5aa8b2800635fee8",
+      "referenced_by": [
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/feature_engineering.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "401b916e6d46c8584b76ff3500907480c8b0402120185ff6b8bd96c9789ea2a7",
+      "referenced_by": [
+        "ai_ml/risk_engine.py"
+      ]
+    },
+    {
+      "path": "ai_ml/inference/anomaly_detector.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "44f6207a873ba7d9dbc7ce73dc7b8852cf1623099e170142b80024aa34f87712",
+      "referenced_by": [
+        "ai_ml/inference/__init__.py",
+        "ai_ml/services/analytics_service.py",
+        "ai_ml/tests/test_inference.py"
+      ]
+    },
+    {
+      "path": "ai_ml/inference/model_interface.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "1c0ba058b7fc9c4e8da2f2c625a0fe9f1fe24c3f401e135483de106c057965d6",
+      "referenced_by": [
+        "ai_ml/inference/__init__.py"
+      ]
+    },
+    {
+      "path": "ai_ml/inference/model_loader.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "1d311ae9aca81badadfc4fa3a192d24041dbf236e416c78db8e1b8f3156821d3",
+      "referenced_by": [
+        "ai_ml/inference/__init__.py",
+        "ai_ml/services/analytics_service.py",
+        "ai_ml/tests/test_assets.py",
+        "ai_ml/tests/test_inference.py"
+      ]
+    },
+    {
+      "path": "ai_ml/inference/__init__.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "424186ff92ab72fbc13fbf8138deb80faf8ec4ab9e0a045dd4b5dbcf83bb86ab",
+      "referenced_by": [
+        ".env.example",
+        "ai_ml/inference/model_interface.py",
+        "ai_ml/iot_ml_lesson1_original.py",
+        "ai_ml/lesson1_ml.py",
+        "ai_ml/main.py",
+        "ai_ml/models/README.md",
+        "ai_ml/README.md",
+        "ai_ml/services/analytics_service.py",
+        "ai_ml/tests/test_assets.py",
+        "ai_ml/tests/test_inference.py",
+        "ai_ml/__init__.py",
+        "backend/scripts/verify-dashboard.js",
+        "backend/src/services/ingestV1.js",
+        "backend/src/services/riskEngine.js",
+        "backend/test/pipeline.test.js",
+        "DOCKER.md",
+        "Frontend/test/safetyData.test.js",
+        "IoT/README.md"
+      ]
+    },
+    {
+      "path": "ai_ml/inference/__pycache__/anomaly_detector.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "344f1ed387e7cd61b013d57cc295d159677300d1d091921502bc470d9ccca7d3",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/inference/__pycache__/model_interface.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "7251600584a96952f258060ed441509f1dd706dc712064e6e007421bff0cbb0b",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/inference/__pycache__/model_loader.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "91d05b26844644a8a87bb6ccaf6688e7879625ae6f03ba16bf02172c064b4143",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/inference/__pycache__/__init__.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "22553db230d9ea088a8cc8fb694a3f268f593160aa83c76f60dedefa482002da",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/iot_ml_lesson1_original.py",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "ea51d5813fc6d204fa1fb211972e59ec528b13194678e800190205f16317a7fc",
+      "referenced_by": [
+        "ai_ml/lesson1_ml.py"
+      ]
+    },
+    {
+      "path": "ai_ml/lesson1_ml.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "b59b8999e99ca6f531d7e7d2dc14988eb0327a0999615ad7fda319194d2cdbb2",
+      "referenced_by": [
+        "ai_ml/inference/model_loader.py",
+        "ai_ml/README.md",
+        "ai_ml/tests/test_assets.py",
+        "ai_ml/verify_assets.py"
+      ]
+    },
+    {
+      "path": "ai_ml/main.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "417815eaa7bfc1b7331700f6b07470c1d006b5a0349176e2c1f2dfda7a773165",
+      "referenced_by": [
+        "ai_ml/.verification-runner.mjs",
+        "ai_ml/datasets/README.md",
+        "ai_ml/Dockerfile",
+        "ai_ml/iot_ml_lesson1_original.py",
+        "ai_ml/models/README.md",
+        "ai_ml/README.md",
+        "ai_ml/risk_engine.py",
+        "ai_ml/tests/test_risk.py",
+        "ai_ml/verify_assets.py",
+        "backend/.env.example",
+        "backend/scripts/verify-dashboard.js",
+        "backend/scripts/verify-integration.js",
+        "backend/src/app.js",
+        "backend/src/models/emergency.js",
+        "backend/src/models/index.js",
+        "backend/src/models/maintenanceTicket.js",
+        "backend/src/models/user.js",
+        "backend/src/routes/analyticsRoutes.js",
+        "backend/src/routes/dashboardRoutes.js",
+        "backend/src/routes/emergencyRoutes.js",
+        "backend/src/routes/iotRoutes.js",
+        "backend/src/routes/maintenanceRoutes.js",
+        "backend/test/auth.test.js",
+        "backend/test/dashboard.test.js",
+        "backend/test/maintenance.test.js",
+        "backend/test/maintenanceFull.test.js",
+        "backend/test/module6RBAC.test.js",
+        "backend/test/telemetryContract.test.js",
+        "DOCKER.md",
+        "Frontend/index.html",
+        "Frontend/README.md",
+        "Frontend/src/App.jsx",
+        "Frontend/src/components/layout/DashboardLayout/DashboardLayout.jsx",
+        "Frontend/src/components/layout/Sidebar/Sidebar.jsx",
+        "Frontend/src/context/LanguageContext.jsx",
+        "Frontend/src/pages/Landing/Landing.jsx",
+        "Frontend/src/pages/Login/Login.jsx",
+        "Frontend/src/pages/Safety/SafetyPages.jsx",
+        "Frontend/src/pages/Teams/Teams.jsx",
+        "Frontend/src/services/api.js",
+        "IoT/firmware/esp32_main/config.example.h",
+        "IoT/firmware/esp32_main/MqttTransport.cpp",
+        "IoT/firmware/esp32_main/Sensors.cpp",
+        "IoT/firmware/README.md",
+        "IoT/firmware/test/signal.test.cpp",
+        "IoT/README.md",
+        "IoT/simulator/publish_test_data.py",
+        "mqtt/acl.example",
+        "mqtt/Initialize-MqttAuth.ps1",
+        "mqtt/mosquitto.auth.conf",
+        "mqtt/README.md",
+        "mqtt/verify-local-broker.cjs",
+        "rebranding-audit.json",
+        "rebranding-changes.json",
+        "rebranding-inventory.json",
+        "REBRANDING.md"
+      ]
+    },
+    {
+      "path": "ai_ml/models/artifacts/.gitkeep",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "3c5394a3b2b7cfb2c38ff139639ad5aa2ce464895cabd8acaf2678cf6bc1c308",
+      "referenced_by": [
+        "ai_ml/.gitignore",
+        "Backend metadata/configuration references parent directory"
+      ]
+    },
+    {
+      "path": "ai_ml/models/README.md",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "3e5e74c18e973b446b3701a0296f7839ff380c9b973c27fe48177e218d15060d",
+      "referenced_by": [
+        "ai_ml/lesson1_ml.py",
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/models/trained/.gitkeep",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "c8df3888a8c434da6ee1fb6a2a8aadd680f400fc77958351861c820d4b58a487",
+      "referenced_by": [
+        "ai_ml/.gitignore",
+        "Backend metadata/configuration references parent directory"
+      ]
+    },
+    {
+      "path": "ai_ml/model_config.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "533b2065d564270a76cad0a00f2a1624ad288aa04f569149794afbd1aabe53cd",
+      "referenced_by": [
+        "ai_ml/feature_engineering.py",
+        "ai_ml/inference/__init__.py",
+        "ai_ml/main.py",
+        "ai_ml/risk_engine.py",
+        "ai_ml/schemas/__init__.py",
+        "ai_ml/tests/test_risk.py",
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/preprocessing/cleaning.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "97b44d4a76b9a325b720719c1fa2f87c43c356d2ab4c0b3ab9dfba2fc0bf0569",
+      "referenced_by": [
+        "ai_ml/preprocessing/__init__.py",
+        "ai_ml/tests/test_preprocessing.py"
+      ]
+    },
+    {
+      "path": "ai_ml/preprocessing/feature_builder.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "c5d6943c44a4d148af9fbf346870d7f10355549dc3299aad4fd769e2897d8b34",
+      "referenced_by": [
+        "ai_ml/preprocessing/__init__.py",
+        "ai_ml/tests/test_preprocessing.py"
+      ]
+    },
+    {
+      "path": "ai_ml/preprocessing/validation.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "348bc492c16cac1f74bccf0da7db47db1212a1b70f006c16ae524843f44deecc",
+      "referenced_by": [
+        ".gitignore",
+        "ai_ml/.verification-runner.mjs",
+        "ai_ml/datasets/samples/README.md",
+        "ai_ml/main.py",
+        "ai_ml/preprocessing/__init__.py",
+        "ai_ml/README.md",
+        "ai_ml/tests/test_preprocessing.py",
+        "ai_ml/tests/test_risk.py",
+        "backend/scripts/verify-dashboard.js",
+        "backend/scripts/verify-integration.js",
+        "backend/src/config/databaseErrors.js",
+        "backend/src/routes/maintenanceRoutes.js",
+        "backend/src/services/mqttServiceV1.js",
+        "backend/src/services/telemetrySchema.js",
+        "backend/test/security.test.js",
+        "DOCKER.md",
+        "Frontend/README.md",
+        "IoT/firmware/esp32_main/config.example.h",
+        "IoT/firmware/esp32_main/esp32_main.ino",
+        "IoT/firmware/README.md",
+        "IoT/README.md",
+        "mqtt/README.md",
+        "mqtt/verify-local-broker.cjs",
+        "rebranding-audit.json",
+        "REBRANDING.md"
+      ]
+    },
+    {
+      "path": "ai_ml/preprocessing/__init__.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "96b533269f9c0d17d132b51e5dd8a66ffd034da578cc970ff71ba4a3cc93fa80",
+      "referenced_by": [
+        "ai_ml/datasets/README.md",
+        "ai_ml/models/model_manifest.json",
+        "ai_ml/risk_engine.py",
+        "ai_ml/tests/test_preprocessing.py"
+      ]
+    },
+    {
+      "path": "ai_ml/preprocessing/__pycache__/cleaning.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "d9b4b00d06a334ed4dda75892071a911bb02c280ba6f4c6a748a1ae900243f96",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/preprocessing/__pycache__/feature_builder.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "5e6b1f7daed9955d3298c16b8d75c94fdf0f3a41ca5014160b79ddcc644fc54e",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/preprocessing/__pycache__/validation.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "88c3d1deaf7801a71afc348224e87f20795990112374e01b40739c132e4e4817",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/preprocessing/__pycache__/__init__.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "522d63a272c00e21487bf73e99c6e6dd7a7cefb207feee321fb5c3fc092a0448",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/README.md",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "b3ca46ac3107034e741a81ca6eeaf948945ae6dff50cc112400eaf259615a04c",
+      "referenced_by": [
+        "ai_ml/lesson1_ml.py",
+        "backend/src/services/mqttServiceV1.js",
+        "backend/src/services/riskEngine.js",
+        "backend/src/services/telemetrySchema.js",
+        "DOCKER.md",
+        "Frontend/.dockerignore",
+        "IoT/README.md",
+        "IoT/simulator/publish_test_data.py",
+        "IoT/simulator/README.md",
+        "mqtt/README.md",
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/requirements.lock.txt",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "5ab62f12eb69e289cd06b02a74fecdcb62791c4d3c7d4adeabb49e886f1d85ec",
+      "referenced_by": [
+        "ai_ml/Dockerfile",
+        "ai_ml/README.md",
+        "ai_ml/requirements-ml.lock.txt"
+      ]
+    },
+    {
+      "path": "ai_ml/requirements.txt",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "3daac1e5c1721be5a096d03d60f635dc89130c3cb5bbcdffbe7b218359017166",
+      "referenced_by": [
+        "ai_ml/README.md",
+        "ai_ml/requirements-ml.txt",
+        "IoT/simulator/README.md"
+      ]
+    },
+    {
+      "path": "ai_ml/risk_engine.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "dfc318065f57b40a2cf300c88ee35375ce9541c5b84135a0b00b776a3ef47863",
+      "referenced_by": [
+        "ai_ml/inference/__init__.py",
+        "ai_ml/tests/test_risk.py",
+        "backend/src/routes/analyticsRoutes.js"
+      ]
+    },
+    {
+      "path": "ai_ml/schemas/feature_schema.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "3bddce066777090c4a8d0cdaa73d1e7f49aa79369870b6d2e26c23c6ab479136",
+      "referenced_by": [
+        "ai_ml/schemas/__init__.py"
+      ]
+    },
+    {
+      "path": "ai_ml/schemas/telemetry_schema.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "461fae07b25083d4bfd9cf232520ed4a1efa444dde39d5646463b0ae19f4e069",
+      "referenced_by": [
+        "ai_ml/schemas/__init__.py"
+      ]
+    },
+    {
+      "path": "ai_ml/schemas/__init__.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "58ea18b1647e54ec5536ce8e2185da725ecde94ecfdc486b040cb03beba23b5c",
+      "referenced_by": [
+        "ai_ml/datasets/README.md",
+        "ai_ml/inference/__init__.py",
+        "ai_ml/main.py",
+        "ai_ml/model_config.py",
+        "ai_ml/preprocessing/__init__.py",
+        "ai_ml/risk_engine.py",
+        "ai_ml/tests/test_risk.py",
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/schemas/__pycache__/feature_schema.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "cec3eacb2483e36efcfa7e00b24f3ea2245d0d36dbc3ae6c0c70e0cede837fb9",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/schemas/__pycache__/telemetry_schema.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "3ff990cf7613d8f58d99933dca9febbc136d911a581664d6ef0ad15c5fb83ba1",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/schemas/__pycache__/__init__.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "e4fbdae6c19799bdbcf52d7ace8a99935ed1755ea341d37508515d63f00c29e0",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/services/analytics_service.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "74af9ea4d506afc4c353af89145d524d56a03f3f27fa1eee9c0996233d5b64d1",
+      "referenced_by": [
+        "ai_ml/main.py",
+        "ai_ml/services/__init__.py"
+      ]
+    },
+    {
+      "path": "ai_ml/services/__init__.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "8c588a3f9f7a3331b231ef4cc6a7002801ce3392af4385aa95037fe771abb74e",
+      "referenced_by": [
+        ".env.example",
+        "ai_ml/.verification-runner.mjs",
+        "ai_ml/main.py",
+        "backend/scripts/test-mqtt.js",
+        "backend/scripts/verify-dashboard.js",
+        "backend/scripts/verify-integration.js",
+        "backend/src/app.js",
+        "backend/src/routes/cameraRoutes.js",
+        "backend/src/routes/securityRoutes.js",
+        "backend/src/server.js",
+        "backend/test/aiService.test.js",
+        "backend/test/backend.test.js",
+        "backend/test/dashboard.test.js",
+        "backend/test/emergency.test.js",
+        "backend/test/mqttV1.test.js",
+        "backend/test/pipeline.test.js",
+        "backend/test/riskEngine.test.js",
+        "backend/test/security.test.js",
+        "backend/test/telemetryContract.test.js",
+        "docker-compose.local.yml",
+        "docker-compose.yml",
+        "DOCKER.md",
+        "Frontend/README.md",
+        "Frontend/src/context/AuthContext.jsx",
+        "Frontend/src/context/LanguageContext.jsx",
+        "Frontend/src/pages/Safety/safetyData.js",
+        "Frontend/src/pages/Safety/SafetyPages.jsx",
+        "Frontend/src/pages/Teams/Teams.jsx",
+        "Frontend/test/brandStorage.test.js",
+        "IoT/README.md",
+        "mqtt/compose.auth.yml",
+        "mqtt/README.md",
+        "rebranding-audit.json",
+        "rebranding-changes.json",
+        "rebranding-inventory.json",
+        "REBRANDING.md"
+      ]
+    },
+    {
+      "path": "ai_ml/services/__pycache__/analytics_service.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "4f56c114f0cfadda53d3fe3944613728dd9b60a6b60b79927291d4af1502cc8c",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/services/__pycache__/__init__.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "a1f99817b0e45c8da21e7d6c5e6809b951855508bb451f6c2fc731b5ac860a55",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/tests/test_analytics.py",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "478f15d7f6418354da921c3056a4358128b52c1e82458f7270ed7e26cc8763de",
+      "referenced_by": [
+        "pytest ai_ml/tests discovery"
+      ]
+    },
+    {
+      "path": "ai_ml/tests/test_inference.py",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "0c46145608749457e174177bc76fb233097f5aa7b87ae8b7271f3032292d6070",
+      "referenced_by": [
+        "pytest ai_ml/tests discovery"
+      ]
+    },
+    {
+      "path": "ai_ml/tests/test_preprocessing.py",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "58d8d13ca8c6ed847959db8d3b024bbb50da1a1d73f33597af88c552fe58256e",
+      "referenced_by": [
+        "pytest ai_ml/tests discovery"
+      ]
+    },
+    {
+      "path": "ai_ml/tests/test_risk.py",
+      "classification": "OPTIONAL",
+      "reason": "Tests, documentation, preserved training provenance or future directories referenced by APIs/configuration",
+      "referenced": true,
+      "sha256": "d9f40843426d00a508791e24d5ddbbbbb7641c408d09ac7683bc8af081458b4b",
+      "referenced_by": [
+        "pytest ai_ml/tests discovery"
+      ]
+    },
+    {
+      "path": "ai_ml/tests/__pycache__/test_analytics.cpython-313-pytest-9.1.1.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "66296706849e4f263188e1fa2d95b9bdd5e3f5df6c5678184bfde4b6b5d7cb9a",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/tests/__pycache__/test_inference.cpython-313-pytest-9.1.1.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "ae7768a166aae2e6adcbfa2c72b19596a9b01851486c1c757fce62ed8c071d4b",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/tests/__pycache__/test_preprocessing.cpython-313-pytest-9.1.1.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "d8726467353b8dd7626760e2b301664144fa810092a038621e8bf9accaef6c7b",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/tests/__pycache__/test_risk.cpython-313-pytest-9.1.1.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "10048892d50910e60d4ed4dfdf357dcaed5f3c966bfdef512ad19a939c130e69",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__init__.py",
+      "classification": "REQUIRED",
+      "reason": "Active runtime, classifier schema, dataset, dependency or deployment file",
+      "referenced": true,
+      "sha256": "0ec6ed62f5735db8d699a7cfcd414965f60c62ab559708ed068810c76b01d3d6",
+      "referenced_by": [
+        ".env.example",
+        "ai_ml/.verification-runner.mjs",
+        "ai_ml/asset-verification.json",
+        "ai_ml/datasets/README.md",
+        "ai_ml/Dockerfile",
+        "ai_ml/lesson1_ml.py",
+        "ai_ml/models/README.md",
+        "ai_ml/README.md",
+        "ai_ml/tests/test_analytics.py",
+        "ai_ml/tests/test_assets.py",
+        "ai_ml/tests/test_inference.py",
+        "ai_ml/tests/test_preprocessing.py",
+        "ai_ml/tests/test_risk.py",
+        "ai_ml/verify_assets.py",
+        "backend/scripts/verify-integration.js",
+        "backend/src/routes/analyticsRoutes.js",
+        "backend/test/analyticsFull.test.js",
+        "docker-compose.local.yml",
+        "docker-compose.yml",
+        "DOCKER.md",
+        "Frontend/src/pages/Safety/SafetyPages.jsx",
+        "IoT/README.md",
+        "rebranding-changes.json",
+        "rebranding-inventory.json"
+      ]
+    },
+    {
+      "path": "ai_ml/__pycache__/feature_engineering.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "ff8e73270cbfcbe3bad463454ad3c1d24489bc4ad5d2bec5665981b3d1143a13",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/inference.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "9cac56c6a420fc5dba31cc984e8b87c131b9f246df29dcc3a403ec7b06180232",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/lesson1_ml.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "22b8e2141aeba0bbff041417fbfd2ab6cbaef79627c0e2e1fd941580eabffbae",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/main.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "370dc4440c102ff41c242ce5c7bde25ad27aded6486ba0184e09942bc01241a9",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/model_config.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "78b4b84552967884d0d5d8de8836f4d70a2efca43c498a0a9a81c0b54e46ceff",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/preprocessing.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "f25c7bc5a2fc0b81bab31c6a3353f5ec83148fcac889520c350571f634c0e5df",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/risk_engine.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "e4d44eee9e722244d6d84d8ffd760f091b33dcb661dd7803d9c92821c460eb59",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/schemas.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "a15873448f9c0fa88354b144e2990ddec19633f3d815610e1748fe5c3e5d67dc",
+      "referenced_by": []
+    },
+    {
+      "path": "ai_ml/__pycache__/__init__.cpython-313.pyc",
+      "classification": "UNWANTED",
+      "reason": "Generated Python/pytest cache; safely regenerable",
+      "referenced": false,
+      "sha256": "5ac225ab104e62285e114559d666f1a86b77d15073caa1c05b7c74dbc79a4a2e",
+      "referenced_by": []
+    }
+  ],
+  "remove_directories": [
+    "ai_ml/.pytest_cache",
+    "ai_ml/analytics/__pycache__",
+    "ai_ml/inference/__pycache__",
+    "ai_ml/preprocessing/__pycache__",
+    "ai_ml/schemas/__pycache__",
+    "ai_ml/services/__pycache__",
+    "ai_ml/tests/__pycache__",
+    "ai_ml/__pycache__"
+  ],
+  "restore_model": {
+    "source": ".docker-validation/rebranding-publish/iot_sensor_model.joblib",
+    "destination": "ai_ml/models/trained/iot_sensor_model.joblib",
+    "sha256": "f1525f9a254ab2780af4cda1b66843e4893757874b1b007e055361cf9d022945",
+    "git_blob": "9eaa44763c97af1ff4796c27623706c5a84d0d9e",
+    "git_commit": "4a7a2d78d64abd5652ed82670f7af8470bc8b7fb"
+  },
+  "external_references": [
+    "Docker/Compose imports ai_ml.main:app",
+    "backend/src/services/aiServiceClient.js consumes /health and /predict rules contract",
+    "backend/src/routes/analyticsRoutes.js and Frontend SafetyPages reference datasets/* and models/* directories",
+    "tests import all runtime packages; lesson1_ml references preserved original training source"
+  ],
+  "planned_fixes": [
+    "Correct package-relative model discovery and only report actual verified loads",
+    "Pin and declare classifier dependencies separately",
+    "Preserve API rules semantics; document incompatible classifier feature units and output labels",
+    "Validate original dataset and model hashes before/after"
+  ],
+  "generated_verification_cleanup": [
+    {
+      "path": "ai_ml/.verification-deps",
+      "classification": "UNWANTED",
+      "reason": "Temporary isolated ML dependencies used for completed verification; reproducible via requirements-ml.lock.txt",
+      "referenced": false
+    },
+    {
+      "path": "ai_ml/.verification-runtime",
+      "classification": "UNWANTED",
+      "reason": "Temporary test broker credentials, logs and isolated MongoDB data created for this audit only; all owned processes stopped",
+      "referenced": false
+    },
+    {
+      "path": "ai_ml/.verification-runner.mjs",
+      "classification": "UNWANTED",
+      "reason": "Temporary relocation of existing integration runner; no product runtime reference",
+      "referenced": false
+    }
+  ]
+}
