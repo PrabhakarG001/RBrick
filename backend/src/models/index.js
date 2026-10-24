@@ -20,6 +20,7 @@ const readingSchema = new Schema({
   health: { type: Map, of: String },
   analysisStatus: { type: String, enum: ['complete', 'unavailable'] },
   analysisError: { type: String, enum: ['timeout', 'unavailable', 'invalid_response'] },
+  ml: Schema.Types.Mixed,
 }, { versionKey: false });
 readingSchema.index({ deviceId: 1, observedAt: -1 });
 readingSchema.index({ receivedAt: -1 });
@@ -100,6 +101,7 @@ const riskAnalysisSchema = new Schema({
   stale: Boolean,
   zoneId: { type: String, maxlength: 128 },
   source: { type: String, enum: ['hardware', 'simulation'] },
+  ml: Schema.Types.Mixed,
 }, { versionKey: false });
 riskAnalysisSchema.index({ deviceId: 1, analyzedAt: -1 });
 riskAnalysisSchema.index({ analyzedAt: -1 });

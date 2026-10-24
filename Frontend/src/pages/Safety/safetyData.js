@@ -1,5 +1,5 @@
 export const sensorLabels = { temperature: 'Temperature (DHT22)', humidity: 'Humidity (DHT22)', gas: 'Gas (MQ-2)', smoke: 'Smoke (MQ-2)', waterLeak: 'Water leak', doorOpen: 'Door activity', sos: 'SOS button' };
-// resilliox-v1 fixed sensor vocabulary (backend/src/services/telemetrySchema.js).
+// rbrick-v1 fixed sensor vocabulary (backend/src/services/telemetrySchema.js).
 export const v1SensorLabels = { temperature: 'Temperature (DHT22)', humidity: 'Humidity (DHT22)', mq2_raw: 'MQ-2 raw ADC', vibration_rms: 'Vibration RMS (MPU6050)', sw420: 'SW-420 switch', pir: 'PIR motion', flame: 'Flame sensor', sos: 'SOS button' };
 // Honest interpretation notes; raw values are never restated as calibrated
 // measurements or safety conclusions the sensors cannot support.
@@ -58,3 +58,128 @@ export function downloadReport(name, payload) {
   const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export const MULTILABEL_TARGET_INFO = {
+  event_fire_suspected: {
+    label: 'Fire Suspicion',
+    category: 'Thermal & Combustion',
+    severity: 'critical',
+    action: 'Evacuate zone immediately; initiate suppression protocols and alert building emergency response.',
+    threshold: 0.23,
+    sensorInputs: ['flame', 'temperature_c', 'camera_flame_confidence'],
+  },
+  event_smoke_suspected: {
+    label: 'Smoke Suspicion',
+    category: 'Air Quality & Fire',
+    severity: 'critical',
+    action: 'Inspect ventilation and HVAC dampers; verify optical smoke detectors and air particulate readings.',
+    threshold: 0.37,
+    sensorInputs: ['mq2_adc_raw_0_4095', 'camera_smoke_confidence'],
+  },
+  event_combustible_gas_suspected: {
+    label: 'Combustible Gas Detected',
+    category: 'Chemical Hazard',
+    severity: 'critical',
+    action: 'Isolate gas mains valve; vent space immediately; prohibit electrical ignition and sparking sources.',
+    threshold: 0.42,
+    sensorInputs: ['mq2_adc_raw_0_4095', 'mq2_delta_from_baseline_pct'],
+  },
+  event_unauthorized_intrusion: {
+    label: 'Unauthorized Intrusion',
+    category: 'Physical Security',
+    severity: 'high',
+    action: 'Dispatch security patrol to zone; verify access badge logs and CCTV surveillance stream.',
+    threshold: 0.32,
+    sensorInputs: ['pir_motion_detected', 'camera_person_confidence', 'is_after_hours'],
+  },
+  event_vibration_anomaly: {
+    label: 'Vibration Anomaly',
+    category: 'Mechanical / Equipment',
+    severity: 'warning',
+    action: 'Inspect nearby motors, pumps, and mechanical mounts for loose fastenings or bearing failure.',
+    threshold: 0.11,
+    sensorInputs: ['sw420_digital_state', 'mpu_accel_magnitude_g', 'vibration_duration_s'],
+  },
+  event_structural_vibration_review: {
+    label: 'Structural Vibration Review',
+    category: 'Structural Integrity',
+    severity: 'warning',
+    action: 'Engage structural facilities engineer; review low-frequency resonance and building foundation sensor traces.',
+    threshold: 0.05,
+    sensorInputs: ['mpu_accel_magnitude_g', 'sw420_pulse_count_10s', 'vibration_duration_s'],
+  },
+  event_heat_risk: {
+    label: 'Extreme Heat Risk',
+    category: 'Environmental Safety',
+    severity: 'high',
+    action: 'Check HVAC cooling cycles; verify room air conditioning; protect temperature-sensitive electrical assets.',
+    threshold: 0.19,
+    sensorInputs: ['temperature_c', 'esp32_board_temp_c'],
+  },
+  event_high_humidity_mold_risk: {
+    label: 'High Humidity / Mold Risk',
+    category: 'Environmental & Air Quality',
+    severity: 'warning',
+    action: 'Deploy commercial dehumidification; inspect plumbing conduits, ceilings, and drywall for moisture ingress.',
+    threshold: 0.25,
+    sensorInputs: ['humidity_rh_pct', 'humidity_high_duration_min'],
+  },
+  event_device_fault: {
+    label: 'Device Hardware Fault',
+    category: 'IoT Hardware Health',
+    severity: 'warning',
+    action: 'Inspect probe wiring, replace failing sensor modules, and verify 3.3V power supply rail stability.',
+    threshold: 0.31,
+    sensorInputs: ['sensor_read_fail_count', 'esp32_3v3_rail_v', 'sensor_values_stale_sec'],
+  },
+  event_network_degradation: {
+    label: 'Network Degradation',
+    category: 'Connectivity & Telemetry',
+    severity: 'info',
+    action: 'Inspect Wi-Fi access point line-of-sight, antenna alignment, and check for 2.4 GHz channel interference.',
+    threshold: 0.27,
+    sensorInputs: ['wifi_rssi_dbm', 'packet_loss_pct', 'mqtt_latency_ms'],
+  },
+};
+
+export const esp32SensorLabels = {
+  temperature: 'Temperature (DHT22)',
+  humidity: 'Humidity (DHT22)',
+  gas_value: 'Combustible Gas (MQ-2 ADC)',
+  fire: 'Flame Sensor',
+  motion: 'Motion Detector (PIR)',
+  vibration: 'Vibration & Tilt (SW-420 / MPU6050)',
+  sos: 'Emergency SOS Button',
+  wifi_rssi: 'Wi-Fi Signal Strength (RSSI)',
+  device_status: 'Device Heartbeat & State',
+};
+
+export function formatEsp32Value(key, value, reading = {}) {
+  if (value === undefined || value === null) return 'Not received';
+  switch (key) {
+    case 'temperature':
+      return `${Number(value).toFixed(1)} °C`;
+    case 'humidity':
+      return `${Number(value).toFixed(1)} % RH`;
+    case 'gas_value':
+      return `${Math.round(value)} ADC (0–4095)`;
+    case 'fire':
+      if (typeof value === 'string') return value.toUpperCase();
+      return value ? 'DANGER' : 'SAFE';
+    case 'motion':
+      if (typeof value === 'string') return value.toUpperCase();
+      return value ? 'DETECTED' : 'NONE';
+    case 'vibration': {
+      const state = typeof value === 'string' ? value.toUpperCase() : value ? 'DETECTED' : 'NORMAL';
+      const tilt = reading?.sensors?.tilt != null ? ` (Tilt: ${Number(reading.sensors.tilt).toFixed(1)}°)` : '';
+      return `${state}${tilt}`;
+    }
+    case 'sos':
+      return value ? 'EMERGENCY OVERRIDE (ACTIVE)' : 'Inactive';
+    case 'wifi_rssi':
+      return `${value} dBm (${value >= -60 ? 'Excellent' : value >= -75 ? 'Good' : 'Weak'})`;
+    default:
+      return String(value);
+  }
+}
+

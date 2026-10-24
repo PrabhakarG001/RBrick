@@ -1,8 +1,14 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { readBrandStorage } from './brandStorage';
+
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+export const getApiBaseUrl = () => RAW_BASE.replace(/\/+$/, '');
+const API_BASE_URL = RAW_BASE.replace(/\/+$/, '').endsWith('/api')
+  ? RAW_BASE.replace(/\/+$/, '')
+  : `${RAW_BASE.replace(/\/+$/, '')}/api`;
 
 // Helper method for HTTP requests with Authorization header
 export async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('ravynx_token') || localStorage.getItem('resilliox_token');
+  const token = readBrandStorage('token');
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -22,8 +28,14 @@ export async function request(endpoint, options = {}) {
     headers,
   };
 
+  const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
+    ? endpoint
+    : endpoint.startsWith('/sensor')
+    ? `${getApiBaseUrl()}${endpoint}`
+    : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    const response = await fetch(url, config);
     const data = await response.json();
 
     if (!response.ok) {
@@ -125,3 +137,27 @@ export const getSafetyReadingsApi = (token) => request('/iot/readings', {
   headers: { Authorization: `Bearer ${token}` },
   signal: AbortSignal.timeout(10000),
 });
+
+// ── Sensor Ingestion & AI Model Services ──
+export const getLatestSensorReadingApi = (deviceId) => {
+  const query = deviceId ? `?deviceId=${encodeURIComponent(deviceId)}` : '';
+  return request(`/sensor/latest${query}`);
+};
+
+export const getSensorHistoryApi = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return request(`/sensor/history${query ? `?${query}` : ''}`);
+};
+
+export const getMultiLabelModelInfoApi = () => request('/sensor/info');
+
+export const getLatestMlPredictionsApi = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return request(`/iot/ml/latest${query ? `?${query}` : ''}`);
+};
+
+export const ingestSensorPayloadApi = (payload) => request('/sensor', {
+  method: 'POST',
+  body: JSON.stringify(payload),
+});
+

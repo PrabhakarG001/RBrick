@@ -1,3 +1,4 @@
+import mqtt from 'mqtt';
 import { settings } from './config/settings.js';
 import { connectDatabase, mongoose } from './config/database.js';
 import { ensureIndexes } from './models/index.js';
@@ -10,6 +11,7 @@ import { createAiServiceClient } from './services/aiServiceClient.js';
 import { storeSecurityAwareTelemetry,recordSecurityAwareState } from './services/securityMqttAdapter.js';
 import { ensureSecurityRules,reconcileSecurityCameras } from './services/securityService.js';
 import { EmergencyService } from './services/emergencyService.js';
+import { createEsp32MqttSubscriber } from './services/sensorIngestionService.js';
 
 let config;
 try { config = settings(); } catch {
@@ -59,20 +61,35 @@ async function establishDatabase() {
     reportDatabaseFailure(error);
   } finally { connecting = false; }
 }
-const app = createApp(config, status, { emergencyService });
+let realtime;
+let esp32MqttClient;
+const services = {
+  emergencyService,
+  aiClient: aiService,
+  broadcast: (event, payload) => realtime?.broadcast(event, payload),
+};
+const app = createApp(config, status, services);
 const server = app.listen(config.port, '0.0.0.0', () => {
   console.log(`IoT API listening on port ${config.port}`);
   if (!config.uri) console.warn('MONGODB_URI missing; database routes will return 503');
   if (config.apiToken.length < 32) console.warn('IOT_API_TOKEN must have at least 32 characters');
   if (!config.mqttEnabled) console.log('MQTT disabled until its contract is configured');
 });
-const realtime = attachRealtime(server, config, status);
+realtime = attachRealtime(server, config, status);
 emergencyService.setRealtime(realtime);
 emergencyService.setMqttPublisher((topic, msg) => {
   if (mqttClient && typeof mqttClient.publish === 'function') {
     mqttClient.publish(topic, msg);
   }
 });
+if (config.mqttEnabled && (process.env.ESP32_MQTT_URL || config.mqttUrl)) {
+  esp32MqttClient = createEsp32MqttSubscriber(config, status, {
+    connect: mqtt.connect,
+    aiClient: aiService,
+    broadcast: (event, payload) => realtime?.broadcast(event, payload),
+    emergencyService,
+  });
+}
 await establishDatabase();
 const timer = setInterval(establishDatabase, 10000);
 let securitySweep=false;
@@ -89,6 +106,7 @@ async function shutdown() {
   clearInterval(securityTimer);
   if (aiTimer) clearInterval(aiTimer);
   const deadline = setTimeout(() => process.exit(1), 10000).unref();
+  if (esp32MqttClient && typeof esp32MqttClient.endAsync === 'function') await esp32MqttClient.endAsync(true);
   if (mqttClient) await mqttClient.endAsync(true);
   await new Promise(resolve => realtime.io.close(resolve));
   await new Promise(resolve => server.close(resolve));

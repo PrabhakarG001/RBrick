@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+import { readBrandStorage, writeBrandStorage } from '../services/brandStorage';
+
 const translations = {
   en: {
     // Auth & Login
@@ -42,7 +44,7 @@ const translations = {
     coreCapabilities: "Core Capabilities",
     bottleneckTitle: "The Underwriting Bottleneck",
     manualVerification: "Manual Verification",
-    ravynxAiEngine: "ResillioX AI Engine",
+    rBrickAiEngine: "RBrick AI Engine",
 
     // Nav & Sidebar
     home: "Home",
@@ -61,7 +63,7 @@ const translations = {
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguageState] = useState(localStorage.getItem('ravynx_lang') || 'en');
+  const [language, setLanguageState] = useState(readBrandStorage('lang') || 'en');
 
   const applyGoogleTranslate = (lang, shouldReload = false) => {
     try {
@@ -86,7 +88,7 @@ export const LanguageProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const storedLang = localStorage.getItem('ravynx_lang');
+    const storedLang = readBrandStorage('lang');
     if (storedLang === 'hi') {
       applyGoogleTranslate('hi', false);
     }
@@ -94,7 +96,7 @@ export const LanguageProvider = ({ children }) => {
 
   const setLanguage = (lang) => {
     setLanguageState(lang);
-    localStorage.setItem('ravynx_lang', lang);
+    writeBrandStorage('lang', lang);
     applyGoogleTranslate(lang, true);
   };
 

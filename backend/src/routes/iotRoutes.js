@@ -204,6 +204,23 @@ export function iotRoutes(config, status) {
       // Latest risk analysis per device so the dashboard shows scores on load.
       risk: latestRisk.map(item => item.risk).filter(risk => !unavailable.has(risk.deviceId)) });
   });
+  router.get('/ml/latest', async (req, res) => {
+    const q = z.object({ deviceId: deviceId.optional(), limit: z.coerce.number().int().min(1).max(100).default(30) }).parse(req.query);
+    const filter = q.deviceId ? { deviceId: q.deviceId, ml: { $exists: true, $ne: null } } : { ml: { $exists: true, $ne: null } };
+    const items = await RiskAnalysis.find(filter).sort({ analyzedAt: -1 }).limit(q.limit).lean();
+    res.json({
+      success: true,
+      items: items.map(r => ({
+        deviceId: r.deviceId,
+        messageId: r.messageId,
+        observedAt: r.observedAt,
+        analyzedAt: r.analyzedAt,
+        score: r.score,
+        classification: r.classification,
+        ml: r.ml,
+      }))
+    });
+  });
   router.get('/analytics', async (req, res) => {
     const q = z.object({ from: date, deviceId: deviceId.optional() }).strict().parse(req.query);
     const from = new Date(q.from), now = new Date();

@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🦅 Ravynx - Frontend
+# 🦅 RBrick - Frontend
 
 **AI-Powered Underwriting & Document Fraud Detection Platform**
 
 Built for banks, NBFCs, and financial institutions demanding zero-error document verification.
 
-[Live Demo](#) · [Report Bug](https://github.com/PrabhakarG001/Ravynx/issues) · [Request Feature](https://github.com/PrabhakarG001/Ravynx/issues)
+Report bugs and request features through your repository issue tracker.
 
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-6.3-646CFF?style=for-the-badge&logo=vite)
@@ -17,9 +17,9 @@ Built for banks, NBFCs, and financial institutions demanding zero-error document
 
 ---
 
-## 🚀 What is Ravynx Frontend?
+## 🚀 What is RBrick Frontend?
 
-The **Ravynx Frontend** is a modern, high-performance web interface built with React 18, Vite 6, and Tailwind CSS v4. It delivers real-time document analysis, risk scoring visualization, interactive PDF document viewing, and team management dashboards.
+The **RBrick Frontend** is a modern, high-performance web interface built with React 18, Vite 6, and Tailwind CSS v4. It delivers real-time document analysis, risk scoring visualization, interactive PDF document viewing, and team management dashboards.
 
 ---
 
@@ -49,7 +49,7 @@ Frontend/
 │   ├── assets/                 # Images & Figma assets
 │   ├── components/
 │   │   ├── CardNav/            # Navigation bar components
-│   │   ├── Logo/               # Ravynx logo components
+│   │   ├── Logo/               # RBrick logo components
 │   │   ├── cards/              # Metric & dashboard card widgets
 │   │   ├── common/             # Badges, pills, indicators
 │   │   ├── layout/             # Sidebar, Navbar, DashboardLayout
@@ -131,4 +131,4 @@ Frontend/
 
 ## 📄 License
 
-Proprietary Software. All rights reserved by **Ravynx Team**.
+Proprietary Software. All rights reserved by **RBrick Team**.

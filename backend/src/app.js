@@ -12,6 +12,7 @@ import { emergencyRoutes } from './routes/emergencyRoutes.js';
 import { maintenanceRoutes } from './routes/maintenanceRoutes.js';
 import { analyticsRoutes } from './routes/analyticsRoutes.js';
 import { dashboardRoutes } from './routes/dashboardRoutes.js';
+import { sensorRoutes } from './routes/sensorRoutes.js';
 import { EmergencyService } from './services/emergencyService.js';
 import { SecurityError } from './services/securityService.js';
 import { SENSOR_NAMES_LIST, NUMERIC_SENSORS_LIST } from './services/telemetrySchema.js';
@@ -20,7 +21,25 @@ export function createApp(config, status, services = {}) {
   const app = express();
   const emergencyService = services.emergencyService || new EmergencyService(status);
   app.disable('x-powered-by');
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }));
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+    next();
+  });
   app.use(express.json({ limit: '10mb' }));
   app.get('/api/health/live', (req, res) => res.json({ success: true, status: 'alive' }));
   app.get('/api/health/ready', (req, res) => {
@@ -77,6 +96,9 @@ export function createApp(config, status, services = {}) {
   app.use('/api/iot/cameras', requireToken(config), databaseRequired, cameraRoutes(config, status));
   app.use('/api/iot', requireToken(config), databaseRequired, iotRoutes(config, status));
   app.use('/api/security', securityRoutes(config, status));
+  // Shared ESP32 sensor ingestion endpoint (compatible with firmware HTTP POST /sensor)
+  app.use('/sensor', sensorRoutes(config, status, services));
+  app.use('/api/sensor', sensorRoutes(config, status, services));
   app.use((req, res) => res.status(404).json({ success: false, message: 'Endpoint not implemented by the IoT API' }));
   app.use((error, req, res, next) => {
     if(error instanceof SecurityError)return res.status(error.status).json({success:false,message:error.message});

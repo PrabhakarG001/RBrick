@@ -7,6 +7,7 @@
 
 import { Server } from 'socket.io';
 import { timingSafeEqual } from 'node:crypto';
+import { decodeAndVerifyToken } from '../middleware/auth.js';
 
 const EVENTS = ['sensor_update', 'risk_update', 'new_alert', 'device_status', 'sos_event'];
 
@@ -21,16 +22,28 @@ export function attachRealtime(httpServer, config, status) {
     maxHttpBufferSize: 1e4,
   });
 
-  // Fail-closed auth: same operator token as the REST API.
+  // Fail-closed auth: operator token or verified user signed token
   io.use((socket, next) => {
-    const supplied = String(socket.handshake.auth?.token ?? '');
-    if (config.apiToken.length < 32) return next(new Error('Authentication not configured'));
-    const actual = Buffer.from(supplied);
-    const expected = Buffer.from(config.apiToken);
-    if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
-      return next(new Error('Invalid token'));
+    const supplied = String(socket.handshake.auth?.token ?? '').trim();
+    if (!supplied) return next(new Error('Invalid token'));
+
+    // 1. Operator token
+    if (config.apiToken && config.apiToken.length >= 32) {
+      const actual = Buffer.from(supplied);
+      const expected = Buffer.from(config.apiToken);
+      if (actual.length === expected.length && timingSafeEqual(actual, expected)) {
+        return next();
+      }
     }
-    next();
+
+    // 2. User signed token
+    const secret = config.apiToken || 'resilliox-default-secure-signing-key-32chars';
+    const decoded = decodeAndVerifyToken(supplied, secret);
+    if (decoded && decoded.userId) {
+      return next();
+    }
+
+    return next(new Error('Invalid token'));
   });
 
   io.on('connection', socket => {

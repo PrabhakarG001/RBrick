@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router';
 import { motion } from 'framer-motion';
 import { 
   Cpu, Radio, ShieldAlert, Wrench, Thermometer, Flame, Activity, Siren, Wifi, WifiOff,
-  AlertTriangle, CheckCircle, Clock, Volume2, VolumeX, UserCheck, Plus, Camera, Search, FileText
+  AlertTriangle, CheckCircle, Clock, Volume2, VolumeX, UserCheck, Plus, Camera, Search, FileText,
+  RefreshCw, Info, AlertOctagon
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import './Safety.css';
@@ -17,12 +18,14 @@ import {
   getMaintenanceTicketsApi, createMaintenanceTicketApi, getMaintenanceTicketByIdApi,
   assignTechnicianApi, updateTicketStatusApi, addTicketNoteApi, uploadTicketPhotoApi, verifyMaintenanceTicketApi,
   getHistoricalTrendsApi, getAnomaliesApi, getRiskRankingsApi, getPerformanceMetricsApi, getModelStatusApi, getUsersApi,
-  runHistoricalAnalysisApi, getDashboardSummaryApi, getDashboardActivityApi
+  runHistoricalAnalysisApi, getDashboardSummaryApi, getDashboardActivityApi,
+  getLatestSensorReadingApi, getMultiLabelModelInfoApi, getLatestMlPredictionsApi, ingestSensorPayloadApi
 } from '../../services/api';
 import { 
   sensorLabels, v1SensorLabels, v1SensorNotes, v1SensorValue, riskClassLabel, sourceLabel, 
   mergeReading, latestReadings, currentRisk, freshReading, when, severity, incidentStatus, 
-  incidentType, deviceState, sensorValue, downloadReport 
+  incidentType, deviceState, sensorValue, downloadReport,
+  MULTILABEL_TARGET_INFO, esp32SensorLabels, formatEsp32Value
 } from './safetyData';
 
 const inputClass = 'safety-input';
@@ -51,16 +54,38 @@ function useAction() {
 function Connection() {
   const s = useSafety(), [input, setInput] = useState('');
   const live = s.live?.status === 'live';
+  const realTimeLabel = s.realtimeMode === 'websocket' && live
+    ? 'connected (Socket.IO Real-time)'
+    : 'polling fallback active (every 10s)';
+
   return <section className="db-chart-card safety-connection" aria-label="Backend connection">
-    <div className="safety-controls"><p className="db-subtitle">Database: {s.meta?.database || 'Not connected'} - MQTT: {s.meta?.mqtt || 'Unknown'} - Live updates: {s.token ? (live ? 'connected (Socket.IO)' : s.live?.status === 'offline' ? 'reconnecting, polling fallback active' : 'connecting...') : 'not connected'} - {s.updatedAt ? `Last refresh: ${when(s.updatedAt)}` : 'No data loaded'}</p>
-      <button className="db-tab" type="button" disabled={!s.token || s.loading} onClick={s.refresh}>{s.loading ? 'Refreshing...' : 'Refresh'}</button>
-      {s.token && <button className="db-tab" onClick={s.disconnect}>Disconnect</button>}</div>
-    <details open={!s.token || Boolean(s.error)}><summary>IoT API connection</summary><form className="safety-controls" onSubmit={e => { e.preventDefault(); s.connect(input); setInput(''); }}>
-      <label>IoT access token<input className={inputClass} type="password" autoComplete="off" required minLength={32} value={input} onChange={e => setInput(e.target.value)} /></label><button className="db-tab" type="submit">Connect</button>
-    </form><p className="db-subtitle">The operator token stays in memory for this session. Stored backend records refresh every 10 seconds. Device freshness uses the configured {s.meta?.offlineAfterSeconds || 120}-second window.</p></details>
-    {!s.token && <p role="status">Connect to load your building data.</p>}
+    <div className="safety-controls">
+      <p className="db-subtitle">
+        Database: {s.meta?.database || 'Not connected'} - MQTT: {s.meta?.mqtt || 'Unknown'} - Ingestion: Active (POST /sensor) - Live updates: {realTimeLabel} - {s.updatedAt ? `Last refresh: ${when(s.updatedAt)}` : s.latestSensorReading ? `Latest sensor received: ${when(s.latestSensorReading.receivedAt || s.latestSensorReading.observedAt)}` : 'No stored data loaded'}
+      </p>
+      <button className="db-tab" type="button" disabled={s.loading || s.sensorLoading} onClick={s.refresh}>
+        {s.loading || s.sensorLoading ? 'Refreshing...' : 'Refresh'}
+      </button>
+      {s.token && <button className="db-tab" onClick={s.disconnect}>Disconnect</button>}
+    </div>
+    <details open={!s.token || Boolean(s.error)}>
+      <summary>IoT API connection {s.token ? '(Session Token Connected)' : '(Optional operator token override)'}</summary>
+      <form className="safety-controls" onSubmit={e => { e.preventDefault(); s.connect(input); setInput(''); }}>
+        <label>IoT access token
+          <input className={inputClass} type="password" autoComplete="off" required minLength={32} value={input} onChange={e => setInput(e.target.value)} placeholder="32+ char token" />
+        </label>
+        <button className="db-tab" type="submit">Connect Token</button>
+      </form>
+      <p className="db-subtitle">Signed-in users connect automatically. You may also provide a dedicated 32-character operator token. Public telemetry endpoints (/sensor/latest, /sensor/info, /sensor/history) are available without a token.</p>
+    </details>
     {s.loading && <p role="status">Loading stored readings and events...</p>}
     {s.error && <p role="alert">{s.error}{s.data && ' Showing a stored snapshot; readings are not live.'}</p>}
+    {s.sensorError && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.5rem' }}>
+        <p role="alert" style={{ color: '#dc2626', margin: 0 }}>Sensor API Error: {s.sensorError}</p>
+        <button className="db-tab" type="button" onClick={s.refresh}>Retry</button>
+      </div>
+    )}
   </section>;
 }
 
@@ -192,15 +217,157 @@ function Trend({ analytics, fields }) {
 
 function SensorCards({ reading }) {
   const s = useSafety();
-  const isV1 = s.meta?.payloadFormat === 'resilliox-v1';
-  const stored = reading;
+  const stored = reading || s.latestSensorReading || latestReadings(s.data?.summary?.latest, s.live?.readings)[0];
   const live = stored ? s.live?.readings?.[stored.deviceId] : null;
-  const merged = isV1 ? mergeReading(stored, live) : stored;
+  const merged = mergeReading(stored, live) || stored;
   const device = merged ? { ...(s.data?.devices?.items || []).find(d => d.deviceId === merged.deviceId), ...s.live?.devices?.[merged.deviceId] } : {};
-  const isFresh = merged && s.meta?.mqtt === 'subscribed' && s.live?.status !== 'offline' && !s.error && device.online !== false && freshReading(merged, s.meta.offlineAfterSeconds, s.now);
-  const operators = { gt: (a,b) => a>b, gte:(a,b)=>a>=b, lt:(a,b)=>a<b, lte:(a,b)=>a<=b, eq:(a,b)=>a===b };
-  const header = merged ? `Device ${merged.deviceId} - Building ${merged.buildingId || device.buildingId || 'not configured'} - Floor ${device.floorId || 'not configured'} - Zone ${merged.zoneId || device.zoneId || 'not configured'} - Received ${when(merged.receivedAt)} - ${device.online === false ? 'Device offline - ' : ''}${isFresh ? 'Fresh telemetry' : 'Stored / stale telemetry'} - ${sourceLabel(merged.source)}` : 'No sensor readings available.';
+  const isFresh = merged && device.online !== false && freshReading(merged, s.meta?.offlineAfterSeconds || 120, s.now);
+  const header = merged ? `Device ${merged.deviceId} - Building ${merged.buildingId || device.buildingId || 'not configured'} - Floor ${device.floorId || 'not configured'} - Zone ${merged.zoneId || device.zoneId || 'not configured'} - Received ${when(merged.receivedAt || merged.observedAt)} - ${device.online === false ? 'Device offline - ' : ''}${isFresh ? 'Fresh telemetry' : 'Stored / stale telemetry'} - ${sourceLabel(merged.source)}` : 'No sensor readings available.';
 
+  if (s.sensorLoading && !merged) {
+    return (
+      <section className="db-chart-card safety-section">
+        <p className="db-subtitle"><RefreshCw className="inline-icon spin" size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} /> Loading sensor readings...</p>
+      </section>
+    );
+  }
+
+  if (s.sensorError && !merged) {
+    return (
+      <section className="db-chart-card safety-section">
+        <p role="alert" style={{ color: '#dc2626', fontWeight: 500, margin: '8px 0' }}>{s.sensorError}</p>
+        <button type="button" className="db-tab db-tab--active" onClick={s.refresh}>
+          <RefreshCw size={14} style={{ marginRight: 6 }} /> Retry Loading Sensors
+        </button>
+      </section>
+    );
+  }
+
+  if (!merged || !merged.sensors || Object.keys(merged.sensors).length === 0) {
+    return (
+      <section className="db-chart-card safety-section">
+        <p className="db-subtitle safety-note">No sensor readings recorded yet. Awaiting telemetry from ESP32 device.</p>
+        <button type="button" className="db-tab" onClick={s.refresh} style={{ marginTop: 8 }}>
+          <RefreshCw size={14} style={{ marginRight: 6 }} /> Refresh
+        </button>
+      </section>
+    );
+  }
+
+  const sensors = merged.sensors;
+
+  // Check if payload contains ESP32 sensor fields
+  const esp32Keys = ['temperature', 'humidity', 'gas_value', 'fire', 'motion', 'vibration', 'sos', 'wifi_rssi'];
+  const hasEsp32Telemetry = esp32Keys.some(k => sensors[k] !== undefined && sensors[k] !== null);
+
+  if (hasEsp32Telemetry) {
+    return (
+      <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0 6px', flexWrap: 'wrap' }}>
+          <p className="db-subtitle safety-note" style={{ margin: 0 }}>
+            {header}{live ? ' - Live updates connected' : ''}
+          </p>
+          {!isFresh && (
+            <span className="db-badge" style={{ background: '#fef3c7', color: '#92400e', fontSize: '11px' }}>
+              Telemetry Stale ({'>'} {s.meta?.offlineAfterSeconds || 120}s)
+            </span>
+          )}
+        </div>
+        <div className="db-stats-grid">
+          {/* Temperature */}
+          {sensors.temperature !== undefined && (
+            <Stat
+              label="Temperature (DHT22)"
+              value={formatEsp32Value('temperature', sensors.temperature)}
+              icon={Thermometer}
+              detail={sensors.temperature > 40 ? 'Extreme heat threshold exceeded' : sensors.temperature < 5 ? 'Low freeze risk' : 'Normal operating range'}
+            />
+          )}
+
+          {/* Humidity */}
+          {sensors.humidity !== undefined && (
+            <Stat
+              label="Humidity (DHT22)"
+              value={formatEsp32Value('humidity', sensors.humidity)}
+              icon={Thermometer}
+              detail={sensors.humidity > 70 ? 'High mold and moisture risk' : sensors.humidity < 20 ? 'Dry air advisory' : 'Optimal comfort range'}
+            />
+          )}
+
+          {/* Combustible Gas */}
+          {sensors.gas_value !== undefined && (
+            <Stat
+              label="Combustible Gas (MQ-2)"
+              value={formatEsp32Value('gas_value', sensors.gas_value)}
+              icon={Flame}
+              detail={sensors.gas_value > 1000 ? 'Combustible gas hazard detected' : 'Normal ambient baseline'}
+            />
+          )}
+
+          {/* Flame Sensor */}
+          {sensors.fire !== undefined && (
+            <Stat
+              label="Flame Detection"
+              value={formatEsp32Value('fire', sensors.fire)}
+              icon={Flame}
+              detail={String(sensors.fire).toUpperCase() === 'DANGER' || sensors.fire === 1 || sensors.fire === true ? 'FLAME DETECTED IN ZONE' : 'No optical flame signature'}
+            />
+          )}
+
+          {/* PIR Motion */}
+          {sensors.motion !== undefined && (
+            <Stat
+              label="Motion Detection (PIR)"
+              value={formatEsp32Value('motion', sensors.motion)}
+              icon={Activity}
+              detail={String(sensors.motion).toUpperCase() === 'DETECTED' || sensors.motion === 1 || sensors.motion === true ? 'PIR motion trigger recorded' : 'Zone quiet (no movement)'}
+            />
+          )}
+
+          {/* Vibration / Tilt */}
+          {(sensors.vibration !== undefined || sensors.tilt !== undefined) && (
+            <Stat
+              label="Vibration & Tilt"
+              value={formatEsp32Value('vibration', sensors.vibration, merged)}
+              icon={Activity}
+              detail={sensors.mpu_connected === false ? 'MPU6050 disconnected' : sensors.tilt != null ? `MPU accelerometer active` : 'SW-420 shock switch'}
+            />
+          )}
+
+          {/* Hardware SOS Emergency */}
+          {sensors.sos !== undefined && (
+            <Stat
+              label="Emergency SOS Switch"
+              value={formatEsp32Value('sos', sensors.sos)}
+              icon={Siren}
+              detail={sensors.sos ? 'CRITICAL: Physical button pressed' : 'Normal standby mode'}
+            />
+          )}
+
+          {/* Wi-Fi RSSI */}
+          {sensors.wifi_rssi !== undefined && (
+            <Stat
+              label="Wi-Fi Signal (RSSI)"
+              value={formatEsp32Value('wifi_rssi', sensors.wifi_rssi)}
+              icon={Wifi}
+              detail={sensors.wifi_rssi < -80 ? 'Poor signal: risk of packet loss' : 'Stable gateway link'}
+            />
+          )}
+
+          {/* Device Connectivity */}
+          <Stat
+            label="Device Connectivity"
+            value={device.online === false ? 'Offline' : 'Online'}
+            icon={Cpu}
+            detail={`Transport: ${merged.transport || (merged.topic?.includes('http') ? 'HTTP' : 'MQTT')} - Last seen: ${when(merged.receivedAt || merged.observedAt)}`}
+          />
+        </div>
+      </>
+    );
+  }
+
+  // Fallback to legacy v1 vocabulary or dynamic mapping
+  const isV1 = ['rbrick-v1', 'resilliox-v1'].includes(s.meta?.payloadFormat);
   if (isV1) {
     const kinds = Object.fromEntries((s.meta?.v1Sensors || []).map(item => [item.name, item.kind]));
     return (
@@ -208,17 +375,13 @@ function SensorCards({ reading }) {
         <p className="db-subtitle safety-note">{header}{live ? ' - includes live socket updates' : ''}</p>
         <div className="db-stats-grid">
           {(s.meta?.v1Sensors || []).map(({ name, kind }) => {
-            const value = merged?.sensors?.[name];
+            const value = sensors[name];
             const health = merged?.health?.[name];
             const healthBad = health && health !== 'ok';
-            const rules = (s.meta?.rules || []).filter(r => r.field === name);
-            const triggered = rules.filter(r => value !== undefined && operators[r.operator]?.(value, r.value));
             const detailParts = [];
             if (value === undefined || value === null) detailParts.push('Awaiting a valid reading for this field');
             else if (!isFresh) detailParts.push('Stored status; not live');
-            if (healthBad) detailParts.push(`Sensor health: ${health} (risk engine distrusts this value)`);
-            if (triggered.length) detailParts.push(triggered.map(r => r.message).join('; '));
-            else if (rules.length && !healthBad) detailParts.push('Normal for configured rules');
+            if (healthBad) detailParts.push(`Sensor health: ${health}`);
             if (v1SensorNotes[name]) detailParts.push(v1SensorNotes[name]);
             const Icon = name === 'temperature' || name === 'humidity' ? Thermometer : name === 'flame' ? Flame : name === 'vibration_rms' || name === 'sw420' ? Activity : name === 'sos' ? Siren : Radio;
             return <Stat key={name} label={v1SensorLabels[name] || name} value={v1SensorValue(name, value, kind || kinds[name])} icon={Icon} detail={detailParts.join(' - ') || undefined} />;
@@ -233,10 +396,8 @@ function SensorCards({ reading }) {
       <p className="db-subtitle safety-note">{header}</p>
       <div className="db-stats-grid">
         {Object.entries(sensorLabels).map(([key, label]) => {
-          const field = s.meta?.display?.[key], value = field ? stored?.sensors?.[field] : undefined;
-          const rules = (s.meta?.rules || []).filter(r => r.field === field);
-          const triggered = rules.filter(r => value !== undefined && operators[r.operator]?.(value, r.value));
-          const detail = !field ? 'Display mapping not configured' : value === undefined ? 'Awaiting this field' : !isFresh ? 'Stored status; not live' : triggered.length ? triggered.map(r => r.message).join('; ') : rules.length ? 'Normal for configured rules' : 'No alert rule configured';
+          const field = s.meta?.display?.[key], value = field ? sensors[field] : undefined;
+          const detail = !field ? 'Display mapping not configured' : value === undefined ? 'Awaiting this field' : !isFresh ? 'Stored status; not live' : 'Normal';
           return <Stat key={key} label={label} value={!field ? '-' : sensorValue(key, value)} icon={key === 'temperature' || key === 'humidity' ? Thermometer : Radio} detail={detail} />;
         })}
       </div>
@@ -246,34 +407,320 @@ function SensorCards({ reading }) {
 
 const riskTone = value => ({ NORMAL: '#16a34a', LOW: '#65a30d', MODERATE: '#d97706', HIGH: '#ea580c', CRITICAL: '#dc2626' }[value] || '#64748b');
 
-function RiskPanel({ deviceId }) {
+export function MultiLabelAiPanel({ deviceId, reading, risk }) {
   const s = useSafety();
-  if (s.meta?.payloadFormat !== 'resilliox-v1') return null;
-  const liveRisk = deviceId ? s.live?.risks?.[deviceId] : null;
-  const storedRisk = (s.data?.summary?.risk || []).find(r => r.deviceId === deviceId) || null;
-  const reading = latestReadings(s.data?.summary?.latest, s.live?.readings).find(r => r.deviceId === deviceId);
-  const risk = currentRisk(reading, liveRisk, storedRisk);
-  const stale = risk?.stale || !freshReading(reading, s.meta?.offlineAfterSeconds, s.now) || s.live?.devices?.[deviceId]?.online === false;
-  if (!deviceId) return <section className="db-chart-card safety-section"><h2 className="db-card-title">AI/ML risk analysis</h2><p className="db-subtitle">No device telemetry has been analyzed yet.</p></section>;
-  const cls = risk?.classification || 'UNKNOWN';
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const targetDeviceId = deviceId || reading?.deviceId || s.latestSensorReading?.deviceId || 'ESP32-Node';
+  
+  // Extract ML object from risk, reading, live risk, or latestSensorReading
+  const liveRisk = targetDeviceId ? s.live?.risks?.[targetDeviceId] : null;
+  const storedRisk = risk || (s.data?.summary?.risk || []).find(r => r.deviceId === targetDeviceId) || null;
+  const targetReading = reading || latestReadings(s.data?.summary?.latest, s.live?.readings).find(r => r.deviceId === targetDeviceId) || s.latestSensorReading;
+  const activeRisk = currentRisk(targetReading, liveRisk, storedRisk);
+  
+  const ml = activeRisk?.ml || targetReading?.ml || liveRisk?.ml || (s.data?.mlLatest?.items || []).find(m => m.deviceId === targetDeviceId)?.ml;
+  const isStale = targetReading && !freshReading(targetReading, s.meta?.offlineAfterSeconds || 120, s.now);
+  const sosPressed = Boolean(targetReading?.sensors?.sos === true || targetReading?.sensors?.sos === 1 || targetReading?.sensors?.sos === '1' || ml?.emergencyOverride);
+  
+  const score = activeRisk?.score ?? (ml?.activeEvents?.length ? Math.min(100, 30 + ml.activeEvents.length * 20) : sosPressed ? 100 : 0);
+  const classification = activeRisk?.classification || (sosPressed ? 'CRITICAL' : ml?.activeEvents?.length ? 'HIGH' : 'NORMAL');
+
+  // Loading state
+  if (s.sensorLoading && !targetReading && !ml) {
+    return (
+      <section className="db-chart-card safety-section" aria-label="AI/ML Multi-Label Events Panel">
+        <div className="db-card-header">
+          <h2 className="db-card-title">IoT Multi-Label AI Safety Engine</h2>
+        </div>
+        <p className="db-subtitle"><RefreshCw className="inline-icon spin" style={{ verticalAlign: 'middle', marginRight: 6 }} size={16} /> Loading AI model predictions and telemetry...</p>
+      </section>
+    );
+  }
+
+  // Error state with retry
+  if (s.sensorError && !targetReading && !ml) {
+    return (
+      <section className="db-chart-card safety-section" aria-label="AI/ML Multi-Label Events Panel">
+        <div className="db-card-header">
+          <h2 className="db-card-title">IoT Multi-Label AI Safety Engine</h2>
+          <span className="db-badge db-badge--fraud">Error</span>
+        </div>
+        <p role="alert" style={{ color: '#dc2626', fontWeight: 500, margin: '12px 0' }}>{s.sensorError}</p>
+        <button type="button" className="db-tab db-tab--active" onClick={s.refresh}>
+          <RefreshCw size={14} style={{ marginRight: 6 }} /> Retry Connection
+        </button>
+      </section>
+    );
+  }
+
+  // Empty state
+  if (!targetReading && !ml) {
+    return (
+      <section className="db-chart-card safety-section" aria-label="AI/ML Multi-Label Events Panel">
+        <div className="db-card-header">
+          <h2 className="db-card-title">IoT Multi-Label AI Safety Engine</h2>
+          <span className="db-badge">Awaiting Telemetry</span>
+        </div>
+        <p className="db-subtitle safety-empty">No device telemetry has been analyzed yet. Connect an ESP32 device or ingest telemetry to view multi-label hazard detection.</p>
+        <button type="button" className="db-tab" onClick={s.refresh} style={{ marginTop: 8 }}>
+          <RefreshCw size={14} style={{ marginRight: 6 }} /> Refresh
+        </button>
+      </section>
+    );
+  }
+
+  const coverage = ml?.sensorCoverage || {
+    suppliedCount: 7,
+    totalCount: 38,
+    coveragePct: 18.4,
+    suppliedFeatures: ['zone_id', 'temperature_c', 'humidity_rh_pct', 'mq2_adc_raw_0_4095', 'pir_motion_detected', 'flame_detected_normalized', 'wifi_rssi_dbm'],
+    missingFeatures: [
+      'monitoring_role', 'zone_restricted', 'is_after_hours', 'authorized_access_window',
+      'mpu_ax_g', 'mpu_ay_g', 'mpu_az_g', 'mpu_accel_magnitude_g', 'mpu_accel_delta_from_baseline_g',
+      'mpu_gx_dps', 'mpu_gy_dps', 'mpu_gz_dps', 'mpu_gyro_magnitude_dps',
+      'sw420_digital_state', 'sw420_pulse_count_10s', 'vibration_duration_s',
+      'humidity_high_duration_min', 'mq2_baseline_adc', 'mq2_delta_from_baseline_pct',
+      'flame_adc_raw_0_4095', 'esp32_cam_frame_ok', 'camera_motion_score_0_100',
+      'camera_person_confidence_0_100', 'camera_smoke_confidence_0_100', 'camera_flame_confidence_0_100',
+      'esp32_3v3_rail_v', 'esp32_board_temp_c', 'packet_loss_pct', 'mqtt_latency_ms',
+      'sensor_read_fail_count', 'sensor_values_stale_sec'
+    ]
+  };
+
+  const activeEventsList = ml?.activeEvents || [];
+  const probabilities = ml?.probabilities || {};
+  const thresholds = ml?.thresholds || {};
 
   return (
-    <section className="db-chart-card safety-section" aria-label="Risk analysis">
-      <div className="db-card-header">
-        <h2 className="db-card-title">AI/ML risk analysis - {deviceId}</h2>
-        {risk && <span className="db-badge" style={{ background: riskTone(cls), color: '#fff' }}>{riskClassLabel(cls)}</span>}
+    <section className="db-chart-card safety-section" aria-label="AI/ML Multi-Label Events Panel">
+      <div className="db-card-header" style={{ flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <h2 className="db-card-title">IoT Multi-Label AI Safety Engine — {targetDeviceId}</h2>
+          <p className="db-subtitle" style={{ marginTop: 4 }}>
+            Trained Multi-Label Random Forest Classifier (10 Simultaneous Hazard Targets)
+            {targetReading?.receivedAt ? ` • Telemetry: ${when(targetReading.receivedAt)}` : ''}
+            {activeRisk?.analyzedAt ? ` • Analyzed: ${when(activeRisk.analyzedAt)}` : ''}
+            {isStale ? ' • [STALE DATA]' : ''}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className="db-badge" style={{ background: riskTone(classification), color: '#fff' }}>
+            Risk: {riskClassLabel(classification)} ({score}/100)
+          </span>
+          {activeEventsList.length > 0 ? (
+            <span className="db-badge db-badge--fraud">
+              {activeEventsList.length} Active Hazard{activeEventsList.length > 1 ? 's' : ''}
+            </span>
+          ) : (
+            <span className="db-badge" style={{ background: '#16a34a', color: '#fff' }}>
+              All 10 Targets Normal
+            </span>
+          )}
+          {sosPressed && (
+            <span className="db-badge db-badge--fraud">
+              SOS EMERGENCY OVERRIDE
+            </span>
+          )}
+        </div>
       </div>
-      {risk ? (
-        <>
-          <p className="db-subtitle">Score {risk.score}/100 - Analyzed {when(risk.analyzedAt)} - {sourceLabel(risk.source)} - {risk.modelVersion || 'Stored engine version unavailable'}{stale ? ' - Based on stale data, not current conditions' : ''}</p>
-          <div className="db-stats-grid"><Stat label="Risk score" value={`${risk.score}/100`} icon={ShieldAlert} detail={riskClassLabel(cls)} /></div>
-          {(risk.factors || []).length ? <Table headers={['Factor','Value','Contribution','Explanation']} rows={risk.factors.map(f => [f.factor, String(f.value ?? '-'), `${f.contribution ?? 0} pts`, f.message])} /> : <p className="db-subtitle">No risk factors in this analysis.</p>}
-        </>
-      ) : (
-        <p className="db-subtitle">{reading?.analysisStatus === 'unavailable' ? 'Python risk analysis unavailable for the latest reading. No risk score was generated.' : 'Waiting for Python analysis of the latest reading.'}</p>
+
+      {/* SOS Independent Emergency Override Banner */}
+      {sosPressed && (
+        <div style={{
+          background: '#fef2f2', border: '1px solid #f87171', borderRadius: '8px',
+          padding: '12px 16px', margin: '12px 0', color: '#991b1b'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Siren size={20} color="#dc2626" />
+            <div>
+              <strong>INDEPENDENT EMERGENCY OVERRIDE ACTIVE</strong>
+              <p style={{ margin: '2px 0 0', fontSize: '13px' }}>
+                Hardware SOS emergency button was activated on device {targetDeviceId}. This emergency signal is an authoritative hardware override and does not depend on AI model predictions.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Stale Data Warning Banner */}
+      {isStale && (
+        <div style={{
+          background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px',
+          padding: '10px 14px', margin: '10px 0', color: '#92400e', fontSize: '13px',
+          display: 'flex', alignItems: 'center', gap: '8px'
+        }}>
+          <Clock size={16} color="#d97706" />
+          <span>
+            <strong>Stale Telemetry Indicator:</strong> This device has not reported telemetry in the last {s.meta?.offlineAfterSeconds || 120} seconds. Displayed AI predictions reflect the last known snapshot and may not reflect current physical building conditions.
+          </span>
+        </div>
+      )}
+
+      {/* Requirement 11: Honest Sensor Feature Coverage Indicator & Synthetic Benchmark Disclaimer */}
+      <div style={{
+        background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px',
+        padding: '12px 16px', margin: '12px 0'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="db-badge db-badge--review">
+                Provisional Inference: {coverage.suppliedCount} / {coverage.totalCount} Features Supplied ({coverage.coveragePct?.toFixed(1) || 18.4}%)
+              </span>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                Model: {ml?.modelVersion || 'iot-building-safety-multilabel-v1.0.0'}
+              </span>
+            </div>
+            <p style={{ fontSize: '13px', color: '#475569', margin: '6px 0 0', lineHeight: 1.5 }}>
+              The multi-label model is operating under limited hardware telemetry from the ESP32 (temperature, humidity, combustible gas ADC, flame sensor, PIR motion, Wi-Fi RSSI, and zone context). The remaining {coverage.totalCount - coverage.suppliedCount} features (6-axis MPU IMU acceleration/gyroscope, camera vision scores, and 3.3V rail voltage) are imputed with neutral benchmark baselines.
+            </p>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>
+              <em>Notice:</em> Trained on synthetic benchmark safety dataset; model predictions are probabilistic advisory indicators for facility operators and must not be treated as validated real-world certainty.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="db-tab"
+            style={{ fontSize: '12px', padding: '4px 10px' }}
+            onClick={() => setDetailsOpen(prev => !prev)}
+          >
+            {detailsOpen ? 'Hide Feature Breakdown' : 'View Feature Breakdown'}
+          </button>
+        </div>
+
+        {detailsOpen && (
+          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0', fontSize: '12px' }}>
+            <p style={{ fontWeight: 600, color: '#334155', marginBottom: '6px' }}>Supplied Physical Telemetry ({coverage.suppliedCount}):</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '10px' }}>
+              {(coverage.suppliedFeatures || []).map(f => (
+                <span key={f} style={{ background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                  ✓ {f}
+                </span>
+              ))}
+            </div>
+            <p style={{ fontWeight: 600, color: '#334155', marginBottom: '6px' }}>Imputed / Absent Features ({coverage.totalCount - coverage.suppliedCount}):</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {(coverage.missingFeatures || []).map(f => (
+                <span key={f} style={{ background: '#f1f5f9', color: '#64748b', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                  - {f}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 10-Target Multi-Label Grid */}
+      <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', margin: '16px 0 10px' }}>
+        Multi-Label Hazard Detection Targets (10 Independent Calibrated Classifiers)
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
+        {Object.entries(MULTILABEL_TARGET_INFO).map(([key, info]) => {
+          const isPredicted = ml ? Boolean(ml.predictions?.[key] || activeEventsList.includes(key)) : false;
+          const prob = probabilities[key] != null ? probabilities[key] : null;
+          const thresh = thresholds[key] != null ? thresholds[key] : info.threshold;
+          const probPct = prob != null ? Math.round(prob * 100) : null;
+          const threshPct = Math.round(thresh * 100);
+
+          return (
+            <div
+              key={key}
+              style={{
+                background: isPredicted ? '#fff5f5' : '#ffffff',
+                border: `1px solid ${isPredicted ? '#fca5a5' : '#e2e8f0'}`,
+                borderLeft: `4px solid ${isPredicted ? '#dc2626' : '#94a3b8'}`,
+                borderRadius: '6px',
+                padding: '12px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                  <div>
+                    <strong style={{ fontSize: '14px', color: isPredicted ? '#991b1b' : '#1e293b' }}>{info.label}</strong>
+                    <span style={{ display: 'block', fontSize: '11px', color: '#64748b' }}>{info.category}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <span className={`db-badge ${isPredicted ? 'db-badge--fraud' : 'db-badge--review'}`} style={{ fontSize: '11px' }}>
+                      {isPredicted ? 'ACTIVE HAZARD' : 'INACTIVE'}
+                    </span>
+                    <span className="db-badge" style={{ fontSize: '10px', background: info.severity === 'critical' ? '#fee2e2' : '#f1f5f9', color: info.severity === 'critical' ? '#991b1b' : '#475569' }}>
+                      {info.severity.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Probability vs Threshold Bar */}
+                {prob != null ? (
+                  <div style={{ margin: '8px 0 10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                      <span style={{ fontWeight: 500, color: isPredicted ? '#b91c1c' : '#334155' }}>
+                        Probability: {(prob * 100).toFixed(1)}%
+                      </span>
+                      <span style={{ color: '#64748b', fontSize: '11px' }}>
+                        Threshold: {threshPct}%
+                      </span>
+                    </div>
+                    <div style={{ position: 'relative', width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          width: `${Math.min(100, Math.max(0, probPct))}%`,
+                          height: '100%',
+                          background: isPredicted ? '#ef4444' : '#3b82f6',
+                          borderRadius: '4px',
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
+                      {/* Threshold Marker Indicator */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${threshPct}%`,
+                          top: 0,
+                          bottom: 0,
+                          width: '2px',
+                          background: '#0f172a',
+                          zIndex: 2,
+                        }}
+                        title={`Calibrated decision threshold: ${threshPct}%`}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '6px 0' }}>Probability awaiting inference</p>
+                )}
+              </div>
+
+              {/* Recommended Action */}
+              <div style={{
+                marginTop: '6px',
+                paddingTop: '6px',
+                borderTop: '1px solid #f1f5f9',
+                fontSize: '12px',
+                color: isPredicted ? '#7f1d1d' : '#64748b',
+                lineHeight: 1.4
+              }}>
+                <strong>Recommended Action:</strong> {isPredicted ? info.action : 'Continue standard facility monitoring.'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
+}
+
+function RiskPanel({ deviceId }) {
+  const s = useSafety();
+  const liveRisk = deviceId ? s.live?.risks?.[deviceId] : null;
+  const storedRisk = (s.data?.summary?.risk || []).find(r => r.deviceId === deviceId) || null;
+  const reading = latestReadings(s.data?.summary?.latest, s.live?.readings).find(r => r.deviceId === deviceId) || s.latestSensorReading;
+
+  // Render the multi-label AI panel directly
+  return <MultiLabelAiPanel deviceId={deviceId} reading={reading} risk={liveRisk || storedRisk} />;
 }
 
 // ── Module 3: Live SOS Banner & Quick Trigger Modal ──
@@ -602,7 +1049,7 @@ export function OverviewPage() {
     : dashSummary?.building?.status === 'WARNING' ? 'Warning / Review needed'
     : !summary || s.error || s.meta?.mqtt !== 'subscribed' || !fresh || !s.meta?.rules?.length ? 'Unknown'
     : summary.active ? 'Review alerts' : 'Normal / Verified Safe';
-  const latestReading = latestReadings(summary?.latest, s.live?.readings)[0];
+  const latestReading = latestReadings(summary?.latest, s.live?.readings)[0] || s.latestSensorReading;
   const liveReading = latestReading ? s.live?.readings?.[latestReading.deviceId] : null;
   const heroDevice = latestReading ? mergeReading(latestReading, liveReading) : null;
   const simulated = heroReadingIsSimulated(heroDevice) || (s.data?.summary?.latest || []).some(r => r.source === 'simulation');
@@ -612,12 +1059,12 @@ export function OverviewPage() {
       {simulated && <p className="safety-sim-badge" role="note">Some readings on this page are simulated test data (source=simulation), not physical hardware measurements.</p>}
       
       <div className="dashboard-hero">
-        <img src="/assets/dashboard_hero.jpg" alt="ResillioX dashboard background" className="dashboard-cls-3" />
+        <img src="/assets/dashboard_hero.jpg" alt="RBrick dashboard background" className="dashboard-cls-3" />
         <div className="dashboard-cls-4" />
         <div className="dashboard-hero-content">
           <h2 className="dashboard-hero-title">Smarter Building Safety Starts Here</h2>
           <p className="dashboard-hero-text">
-            Monitor building conditions in real time, detect potential safety hazards, and track security incidents with ResillioX. Stay informed about sensor activity, emergency alerts, and maintenance needs from one centralized dashboard.
+            Monitor building conditions in real time, detect potential safety hazards, and track security incidents with RBrick. Stay informed about sensor activity, emergency alerts, and maintenance needs from one centralized dashboard.
           </p>
           <div className="dashboard-cls-5">
             <Link to="/monitoring" className="db-hero-btn">View Telemetry</Link>
@@ -706,7 +1153,7 @@ export function OverviewPage() {
 function heroReadingIsSimulated(reading) { return reading?.source === 'simulation'; }
 
 function trendFields(s) {
-  if (s.meta?.payloadFormat === 'resilliox-v1') return (s.meta?.v1Sensors || []).filter(item => item.kind === 'number').map(item => item.name);
+  if (['rbrick-v1', 'resilliox-v1'].includes(s.meta?.payloadFormat)) return (s.meta?.v1Sensors || []).filter(item => item.kind === 'number').map(item => item.name);
   return Object.keys(s.meta?.fields || {}).filter(k => s.meta.fields[k] === 'number');
 }
 
@@ -774,6 +1221,299 @@ function Table({ headers, rows }) {
   ); 
 }
 
+function SensorSimulationDrawer() {
+  const s = useSafety();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [statusError, setStatusError] = useState('');
+
+  const presets = [
+    {
+      id: 'normal',
+      name: 'Normal Building Telemetry',
+      desc: 'Ambient 22.5°C, 45% RH, low gas ADC (280), no flames, no motion, Wi-Fi -55 dBm',
+      payload: {
+        building: 'Engineering-Tower',
+        area: 'Lab-301',
+        deviceId: 'esp32_eng_lab301',
+        temperature: 22.5,
+        humidity: 45.0,
+        gas_value: 280,
+        fire: 0,
+        motion: 0,
+        vibration: 0.04,
+        wifi_rssi: -55,
+        sos: 0,
+        source: 'simulation',
+      },
+    },
+    {
+      id: 'fire_smoke',
+      name: 'Fire & Smoke Hazard',
+      desc: 'Elevated temperature (42°C), high gas (1850 ADC), flame sensor triggered, smoke flag active',
+      payload: {
+        building: 'Engineering-Tower',
+        area: 'Chemical-Storage',
+        deviceId: 'esp32_eng_chem_storage',
+        temperature: 42.0,
+        humidity: 38.0,
+        gas_value: 1850,
+        fire: 1,
+        smoke: 1,
+        motion: 0,
+        vibration: 0.12,
+        wifi_rssi: -60,
+        sos: 0,
+        source: 'simulation',
+      },
+    },
+    {
+      id: 'gas_leak',
+      name: 'Combustible Gas Leak',
+      desc: 'MQ-2 analog ADC spike (2650), normal temperature (23°C), 52% RH, no flame',
+      payload: {
+        building: 'Engineering-Tower',
+        area: 'Boiler-Room',
+        deviceId: 'esp32_eng_boiler_room',
+        temperature: 23.0,
+        humidity: 52.0,
+        gas_value: 2650,
+        fire: 0,
+        motion: 0,
+        vibration: 0.06,
+        wifi_rssi: -65,
+        sos: 0,
+        source: 'simulation',
+      },
+    },
+    {
+      id: 'night_intrusion',
+      name: 'After-Hours Unauthorized Intrusion',
+      desc: 'PIR motion detected, 21°C, quiet zone, vibration spike from entry',
+      payload: {
+        building: 'Engineering-Tower',
+        area: 'Executive-Archive',
+        deviceId: 'esp32_eng_archive',
+        temperature: 21.0,
+        humidity: 48.0,
+        gas_value: 220,
+        fire: 0,
+        motion: 1,
+        vibration: 0.08,
+        wifi_rssi: -62,
+        sos: 0,
+        source: 'simulation',
+      },
+    },
+    {
+      id: 'heat_mold',
+      name: 'Extreme Heat & High Humidity Mold Risk',
+      desc: 'DHT22 extreme heat (47.5°C), high humidity (88% RH), warm ambient baseline',
+      payload: {
+        building: 'Engineering-Tower',
+        area: 'Server-Basement',
+        deviceId: 'esp32_eng_server_basement',
+        temperature: 47.5,
+        humidity: 88.0,
+        gas_value: 320,
+        fire: 0,
+        motion: 0,
+        vibration: 0.02,
+        wifi_rssi: -72,
+        sos: 0,
+        source: 'simulation',
+      },
+    },
+    {
+      id: 'sos_override',
+      name: 'Emergency SOS Override (Independent Safety Trigger)',
+      desc: 'Physical SOS button pressed on device (sos: true) - instant critical incident regardless of ML model',
+      payload: {
+        building: 'Engineering-Tower',
+        area: 'Main-Lobby',
+        deviceId: 'esp32_eng_lobby',
+        temperature: 23.5,
+        humidity: 46.0,
+        gas_value: 240,
+        fire: 0,
+        motion: 0,
+        vibration: 0.01,
+        wifi_rssi: -54,
+        sos: 1,
+        source: 'simulation',
+      },
+    },
+  ];
+
+  const handleSend = async (preset) => {
+    setBusy(true);
+    setStatusMessage('');
+    setStatusError('');
+    try {
+      const res = await s.ingestTelemetry(preset.payload);
+      const activeEvts = res.ml_predictions?.activeEvents || [];
+      setStatusMessage(
+        `✓ Ingested "${preset.name}" (${preset.payload.deviceId}). Classification: ${res.classification} (${res.score}/100). Active ML Events: ${activeEvts.length ? activeEvts.map(e => e.replace(/^event_/, '').replace(/_/g, ' ')).join(', ') : 'None'}. Emergency Override: ${res.emergency_override ? 'YES (SOS Override)' : 'No'}.`
+      );
+    } catch (e) {
+      setStatusError(e.message || 'Ingestion failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="safety-sim-drawer" aria-label="Simulate ESP32 Sensor Telemetry">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '.5rem' }}>
+        <div>
+          <strong style={{ fontSize: '14px', color: '#0f172a' }}>Simulate ESP32 Sensor Telemetry (POST /sensor)</strong>
+          <p className="db-subtitle" style={{ margin: '2px 0 0' }}>
+            Inject test payloads into the backend sensor ingestion pipeline to verify live Socket.IO broadcasts and multi-label AI predictions.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="db-tab"
+          style={{ fontSize: '12px' }}
+          onClick={() => setOpen(prev => !prev)}
+        >
+          {open ? 'Hide Simulation Presets' : 'Test Sensor Scenarios'}
+        </button>
+      </div>
+
+      {statusMessage && (
+        <p role="status" style={{ color: '#16a34a', fontWeight: 600, fontSize: '13px', margin: '10px 0 0' }}>
+          {statusMessage}
+        </p>
+      )}
+      {statusError && (
+        <p role="alert" style={{ color: '#dc2626', fontWeight: 600, fontSize: '13px', margin: '10px 0 0' }}>
+          {statusError}
+        </p>
+      )}
+
+      {open && (
+        <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px' }}>
+          {presets.map(p => (
+            <div
+              key={p.id}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                padding: '10px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '8px',
+              }}
+            >
+              <div>
+                <strong style={{ fontSize: '13px', color: '#1e293b' }}>{p.name}</strong>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0', lineHeight: 1.4 }}>{p.desc}</p>
+              </div>
+              <button
+                type="button"
+                className="db-tab db-tab--active"
+                style={{ fontSize: '12px', alignSelf: 'flex-start' }}
+                disabled={busy}
+                onClick={() => handleSend(p)}
+              >
+                {busy ? 'Sending...' : 'Send Payload'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HistoricalMlEventsTable({ items = [] }) {
+  if (!items || items.length === 0) {
+    return (
+      <section className="db-chart-card safety-section" aria-label="Historical AI Multi-Label Hazard Predictions">
+        <div className="db-card-header">
+          <h2 className="db-card-title">Historical AI Multi-Label Hazard Predictions</h2>
+          <span className="db-badge">0 Events</span>
+        </div>
+        <p className="db-subtitle safety-empty">No historical multi-label inference records recorded yet. Ingest sensor telemetry to generate historical records.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="db-chart-card safety-section" aria-label="Historical AI Multi-Label Hazard Predictions">
+      <div className="db-card-header">
+        <h2 className="db-card-title">Historical AI Multi-Label Hazard Predictions</h2>
+        <span className="db-badge">{items.length} Recorded Inferences</span>
+      </div>
+      <p className="db-subtitle">Chronological record of multi-label model predictions and risk classifications across building devices.</p>
+      <div className="safety-table-wrap">
+        <table className="safety-table">
+          <thead>
+            <tr>
+              <th scope="col">Device ID</th>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Classification</th>
+              <th scope="col">Score</th>
+              <th scope="col">Active Hazard Predictions</th>
+              <th scope="col">Feature Coverage</th>
+              <th scope="col">Override</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, idx) => {
+              const ml = item.ml || {};
+              const activeEvents = ml.activeEvents || [];
+              const probabilities = ml.probabilities || {};
+              const coverage = ml.sensorCoverage;
+              const isCritical = item.classification === 'CRITICAL' || ml.emergencyOverride;
+              return (
+                <tr key={item._id || item.messageId || idx}>
+                  <td><strong>{item.deviceId}</strong></td>
+                  <td>{when(item.analyzedAt || item.observedAt || item.receivedAt)}</td>
+                  <td>
+                    <span className={`db-badge ${isCritical ? 'db-badge--fraud' : item.classification === 'HIGH' ? 'db-badge--fraud' : 'db-badge--review'}`}>
+                      {item.classification || 'NORMAL'}
+                    </span>
+                  </td>
+                  <td>{item.score ?? (activeEvents.length ? 75 : 0)}/100</td>
+                  <td>
+                    {activeEvents.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {activeEvents.map(ev => (
+                          <span key={ev} style={{ background: '#fee2e2', color: '#991b1b', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                            {ev.replace(/^event_/, '').replace(/_/g, ' ')}
+                            {probabilities[ev] != null ? ` (${Math.round(probabilities[ev] * 100)}%)` : ''}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ color: '#16a34a', fontSize: '12px' }}>✓ Normal (0 active hazards)</span>
+                    )}
+                  </td>
+                  <td>
+                    {coverage ? `${coverage.suppliedCount}/${coverage.totalCount} features (${coverage.coveragePct}%)` : (ml.modelVersion || 'Standard')}
+                  </td>
+                  <td>
+                    {ml.emergencyOverride ? (
+                      <span style={{ color: '#dc2626', fontWeight: 700 }}>🚨 SOS OVERRIDE</span>
+                    ) : (
+                      <span style={{ color: '#64748b' }}>None</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 // ── Module 1 & 2: Monitoring Page ──
 export function MonitoringPage() {
   const s = useSafety(), [params, setParams] = useSearchParams(), [device, setDevice] = useState('');
@@ -781,9 +1521,13 @@ export function MonitoringPage() {
   const from = new Date(Date.now() - Number(s.range) * 3600000).toISOString().slice(0, 16) + ':00.000Z';
   const readings = useList('readings', { deviceId: device, from });
   const filteredAnalytics = useRangeAnalytics(device);
-  const stored = latestReadings(s.data?.summary?.latest, s.live?.readings).find(r => !device || r.deviceId === device);
+  const stored = latestReadings(s.data?.summary?.latest, s.live?.readings).find(r => !device || r.deviceId === device) || s.latestSensorReading;
   const selected = stored ? mergeReading(stored, s.live?.readings?.[stored.deviceId]) : null;
   const liveRisk = selected ? currentRisk(selected, s.live?.risks?.[selected.deviceId], (s.data?.summary?.risk || []).find(r => r.deviceId === selected.deviceId)) : null;
+
+  // Combine database history with public/in-memory sensor history
+  const historyItems = readings.items?.length ? readings.items : (s.sensorHistory || []);
+  const mlHistory = s.mlLatest?.length ? s.mlLatest : (s.data?.mlLatest?.items || []);
 
   return (
     <Page title="Safety Monitoring" subtitle="ESP32 connectivity, sensor readings, device registration, and recorded telemetry.">
@@ -801,19 +1545,35 @@ export function MonitoringPage() {
       ) : (
         <>
           <div className="safety-controls"><DeviceFilter value={device} onChange={setDevice} /><Range /></div>
-          <p className="db-subtitle safety-note">MQTT: {s.meta?.mqtt || 'Unknown'}. Online/offline uses time since the last received message. Raw fields retain firmware units.</p>
+          <p className="db-subtitle safety-note">
+            Transport: {s.meta?.mqtt === 'subscribed' ? 'MQTT active' : 'HTTP Ingestion (POST /sensor)'}. Mode: {s.realtimeMode === 'websocket' ? 'WebSocket (Socket.IO)' : 'Polling fallback'}. Raw fields retain firmware units.
+          </p>
+
+          {/* Interactive ESP32 Telemetry Simulation Drawer */}
+          <SensorSimulationDrawer />
+
+          {/* 1. Real-time / Stored Sensor Telemetry */}
           <SensorCards reading={stored} />
-          {liveRisk && <p className="db-subtitle safety-note">Live risk: {riskClassLabel(liveRisk.classification)} ({liveRisk.score}/100) at {when(liveRisk.analyzedAt)}.</p>}
-          <div className="safety-controls safety-section"><CameraPanel deviceId={selected?.deviceId} /></div>
+
+          {/* 2. Multi-Label AI Hazard Events Panel */}
+          <RiskPanel deviceId={selected?.deviceId || s.latestSensorReading?.deviceId} />
+          {liveRisk && <p className="db-subtitle safety-note">Overall composite risk: {riskClassLabel(liveRisk.classification)} ({liveRisk.score}/100) at {when(liveRisk.analyzedAt)}.</p>}
+
+          <div className="safety-controls safety-section"><CameraPanel deviceId={selected?.deviceId || s.latestSensorReading?.deviceId} /></div>
           {filteredAnalytics.error && <p role="alert">{filteredAnalytics.error}</p>}
           <Trend analytics={filteredAnalytics.analytics} fields={trendFields(s)} />
+
+          {/* 3. Historical AI Multi-Label Hazard Predictions */}
+          <HistoricalMlEventsTable items={mlHistory} />
+
+          {/* 4. Historical Sensor Telemetry Log */}
           <section className="db-chart-card safety-section">
             <h2 className="db-card-title">Stored sensor history</h2>
-            <Table headers={['Device', 'Observed', 'Received', 'Source', 'Sensor values']} rows={readings.items.map(r => [
+            <Table headers={['Device', 'Observed', 'Received', 'Source', 'Sensor values']} rows={historyItems.map(r => [
               r.deviceId, when(r.observedAt), when(r.receivedAt), sourceLabel(r.source),
               Object.entries(r.sensors || {}).map(([k, v]) => `${k}: ${v}`).join(' - ')
             ])} />
-            {readings.footer}
+            {readings.items?.length > 0 && readings.footer}
           </section>
         </>
       )}
@@ -897,7 +1657,7 @@ export function IncidentsPage() {
                 ))}
               </select>
             </label>
-            <button className="db-tab" disabled={!incidents.result} onClick={() => downloadReport('resilliox-safety-incidents.json', { project: 'ResillioX', generatedAt: new Date().toISOString(), source: 'Stored backend incidents', coverage: 'Current filtered page', filters: filter, totalMatching: incidents.total, page: incidents.result.page, incidents: incidents.items })}>
+            <button className="db-tab" disabled={!incidents.result} onClick={() => downloadReport('rbrick-safety-incidents.json', { project: 'RBrick', generatedAt: new Date().toISOString(), source: 'Stored backend incidents', coverage: 'Current filtered page', filters: filter, totalMatching: incidents.total, page: incidents.result.page, incidents: incidents.items })}>
               Export Safety Report
             </button>
           </div>
@@ -1725,8 +2485,8 @@ export function AnalyticsPage() {
         <button 
           className="db-tab db-tab--active" 
           disabled={!analytics} 
-          onClick={() => downloadReport('resilliox-building-safety-analytics.json', { 
-            project: 'ResillioX', 
+          onClick={() => downloadReport('rbrick-building-safety-analytics.json', {
+            project: 'RBrick',
             generatedAt: new Date().toISOString(), 
             device: device || 'All', 
             analytics, 

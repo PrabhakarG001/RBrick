@@ -20,6 +20,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:5000' },
+      '/sensor': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:5000' },
       // Socket.IO realtime (Phase 6); WebSocket upgrade required.
       '/socket.io': {
         target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:5000',

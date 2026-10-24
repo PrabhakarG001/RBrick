@@ -96,5 +96,30 @@ export function createAiServiceClient(config, status = {}, fetchImpl = fetch) {
         failed(safeError); throw safeError;
       }
     },
+    async predictMultiLabel(payload, options = {}) {
+      try {
+        const raw = await request('/predict/multilabel', payload);
+        if (!raw || typeof raw !== 'object' || !raw.predicted_labels) {
+          throw new AiServiceError('invalid_response');
+        }
+        succeeded();
+        return raw;
+      } catch (error) {
+        const safeError = error instanceof AiServiceError ? error : new AiServiceError('invalid_response');
+        failed(safeError);
+        throw safeError;
+      }
+    },
+    async getMultiLabelInfo() {
+      try {
+        const raw = await request('/models/multilabel/info');
+        succeeded();
+        return raw;
+      } catch (error) {
+        const safeError = error instanceof AiServiceError ? error : new AiServiceError('invalid_response');
+        failed(safeError);
+        throw safeError;
+      }
+    },
   };
 }

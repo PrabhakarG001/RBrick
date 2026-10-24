@@ -132,6 +132,34 @@ class MultiLabelIoTModel(BaseModelInterface):
             if is_active == 1:
                 active_events.append(tgt)
 
+        # Compute sensor coverage against the 38 model features
+        supplied_features = []
+        for col in self.feature_names:
+            val = df_features[col].iloc[0]
+            if pd.notna(val) and val is not None and val != "":
+                supplied_features.append(col)
+
+        missing_features = [f for f in self.feature_names if f not in supplied_features]
+        total_count = len(self.feature_names)
+        supplied_count = len(supplied_features)
+        coverage_pct = round((supplied_count / total_count) * 100, 2) if total_count > 0 else 0.0
+
+        sensor_coverage = {
+            "supplied_count": supplied_count,
+            "total_count": total_count,
+            "missing_count": len(missing_features),
+            "coverage_pct": coverage_pct,
+            "supplied_features": supplied_features,
+            "missing_features": missing_features,
+            "coverage_status": "full" if len(missing_features) == 0 else "reduced",
+            "is_reduced_coverage": len(missing_features) > 0,
+            "coverage_warning": (
+                f"Warning: Hardware measures {supplied_count}/{total_count} features ({coverage_pct}% coverage). "
+                "Absent features (raw MPU axes, gyro, SW420, gas baseline, camera, electrical rails) are imputed via training medians."
+                if len(missing_features) > 0 else None
+            ),
+        }
+
         # Extract device health info if available
         device_health = self._extract_health(input_data)
 
@@ -143,6 +171,7 @@ class MultiLabelIoTModel(BaseModelInterface):
             "active_event_count": len(active_events),
             "emergency_override": sos_pressed,
             "sos_triggered": sos_pressed,
+            "sensor_coverage": sensor_coverage,
             "device_health": device_health,
             "model_version": self.model_version,
             "disclaimer": self.disclaimer,
@@ -181,11 +210,15 @@ class MultiLabelIoTModel(BaseModelInterface):
                 return bool(input_data["sos_button_pressed"].iloc[0] == 1)
             if "event_sos_triggered" in input_data.columns:
                 return bool(input_data["event_sos_triggered"].iloc[0] == 1)
+            if "sos" in input_data.columns:
+                return bool(input_data["sos"].iloc[0] in (1, True, "1"))
             return False
         if isinstance(input_data, dict):
             if input_data.get("sos_button_pressed") in (1, True, "1"):
                 return True
             if input_data.get("event_sos_triggered") in (1, True, "1"):
+                return True
+            if input_data.get("sos") in (1, True, "1"):
                 return True
             sensors = input_data.get("sensors", {})
             if isinstance(sensors, dict) and sensors.get("sos") in (1, True, "1"):
@@ -226,24 +259,51 @@ class MultiLabelIoTModel(BaseModelInterface):
 
         if isinstance(input_data, dict):
             row = {}
-            # Flatten sensors dict if present
             flat = dict(input_data)
+            # Flatten sensors dict if present
             if "sensors" in flat and isinstance(flat["sensors"], dict):
                 for k, v in flat["sensors"].items():
-                    # Map legacy names if present
-                    if k == "temperature":
-                        flat["temperature_c"] = v
-                    elif k == "humidity":
-                        flat["humidity_rh_pct"] = v
-                    elif k == "mq2_raw":
-                        flat["mq2_adc_raw_0_4095"] = v
-                    elif k == "sw420":
-                        flat["sw420_digital_state"] = int(v is True)
-                    elif k == "pir":
-                        flat["pir_motion_detected"] = int(v is True)
-                    elif k == "flame":
-                        flat["flame_detected_normalized"] = int(v is True)
-                    flat[k] = v
+                    if k not in flat:
+                        flat[k] = v
+
+            # Map ESP32 wire names to model feature names if not already set
+            mapping = {
+                "temperature": "temperature_c",
+                "humidity": "humidity_rh_pct",
+                "gas_value": "mq2_adc_raw_0_4095",
+                "mq2_raw": "mq2_adc_raw_0_4095",
+                "area": "zone_id",
+                "wifi_rssi": "wifi_rssi_dbm",
+            }
+            for src, dst in mapping.items():
+                if dst not in flat and src in flat and flat[src] is not None:
+                    flat[dst] = flat[src]
+
+            # Motion mapping: "DETECTED" / "NONE" / boolean / binary
+            if "pir_motion_detected" not in flat:
+                motion_val = flat.get("motion", flat.get("pir"))
+                if motion_val is not None:
+                    if motion_val in ("DETECTED", 1, True, "1", 1.0):
+                        flat["pir_motion_detected"] = 1
+                    elif motion_val in ("NONE", 0, False, "0", 0.0):
+                        flat["pir_motion_detected"] = 0
+                    else:
+                        raise ValueError(f"Invalid motion value: '{motion_val}'. Expected 'DETECTED', 'NONE', or boolean/binary.")
+
+            # Fire mapping: "DANGER" / "SAFE" / boolean / binary
+            if "flame_detected_normalized" not in flat:
+                fire_val = flat.get("fire", flat.get("flame"))
+                if fire_val is not None:
+                    if fire_val in ("DANGER", 1, True, "1", 1.0):
+                        flat["flame_detected_normalized"] = 1.0
+                    elif fire_val in ("SAFE", 0, False, "0", 0.0):
+                        flat["flame_detected_normalized"] = 0.0
+                    else:
+                        raise ValueError(f"Invalid fire value: '{fire_val}'. Expected 'DANGER', 'SAFE', or boolean/binary.")
+
+            # Note: ESP32 vibration ("DETECTED"/"NORMAL") is a firmware threshold alarm,
+            # not raw acceleration or SW420 sensor reading, so it is NOT mapped to model features.
+            # Note: tilt is not a feature in this model artifact, so it is NOT mapped.
 
             for col in self.feature_names:
                 row[col] = flat.get(col, np.nan)
@@ -261,8 +321,20 @@ class MultiLabelIoTModel(BaseModelInterface):
                 "health_status": input_data.health,
             }
         if isinstance(input_data, dict):
+            flat = dict(input_data)
+            if "sensors" in flat and isinstance(flat["sensors"], dict):
+                for k, v in flat["sensors"].items():
+                    if k not in flat:
+                        flat[k] = v
             for k in [
+                "mpu_connected",
+                "buzzer_on",
+                "alarm",
+                "smoke",
+                "vibration",
+                "tilt",
                 "wifi_rssi_dbm",
+                "wifi_rssi",
                 "packet_loss_pct",
                 "mqtt_latency_ms",
                 "sensor_read_fail_count",
@@ -270,10 +342,16 @@ class MultiLabelIoTModel(BaseModelInterface):
                 "esp32_3v3_rail_v",
                 "esp32_board_temp_c",
             ]:
-                if k in input_data:
-                    health[k] = input_data[k]
+                if k in flat and flat[k] is not None:
+                    health[k] = flat[k]
         elif isinstance(input_data, pd.DataFrame):
             for k in [
+                "mpu_connected",
+                "buzzer_on",
+                "alarm",
+                "smoke",
+                "vibration",
+                "tilt",
                 "wifi_rssi_dbm",
                 "packet_loss_pct",
                 "mqtt_latency_ms",
@@ -285,3 +363,4 @@ class MultiLabelIoTModel(BaseModelInterface):
                 if k in input_data.columns:
                     health[k] = input_data[k].iloc[0]
         return health
+

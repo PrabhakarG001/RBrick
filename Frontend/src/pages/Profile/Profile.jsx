@@ -78,7 +78,7 @@ export const Profile = () => {
           </label>
           <input 
             type="email" 
-            value={user?.email || 'operator@resilliox.local'}
+            value={user?.email || 'operator@rbrick.local'}
             readOnly
             title="Email cannot be changed directly"
             className="profile-cls-12"

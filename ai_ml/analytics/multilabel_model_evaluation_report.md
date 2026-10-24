@@ -1,7 +1,7 @@
 # IoT Building Safety Multi-Label Classifier: Evaluation Report
 
 **Model Version:** `iot-building-safety-multilabel-v1.0.0`  
-**Training Timestamp (UTC):** `2026-10-23T12:58:16.099964+00:00`  
+**Training Timestamp (UTC):** `2026-10-23T22:49:28.292908+00:00`  
 **Records:** 8400 train / 1800 validation / 1800 test  
 **Primary Dataset:** `C:\Users\Priyanshu Mishra\Downloads\ResillioX\ai_ml\datasets\iot_building_safety_model_input_targets.csv`  
 
